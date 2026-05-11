@@ -1,11 +1,11 @@
-# @wsc/formhelper-mui
+# kes-formhelper-mui
 
 Form helper components for MUI built on react-hook-form.
 
 ## Install
 
 ```bash
-npm install @wsc/formhelper-mui
+npm install kes-formhelper-mui
 ```
 
 ## Peer dependencies
@@ -26,7 +26,7 @@ import {
 	Select,
 	ThemeProvider,
 	theme,
-} from '@wsc/formhelper-mui';
+} from 'kes-formhelper-mui';
 
 export function ExampleForm() {
 	return (

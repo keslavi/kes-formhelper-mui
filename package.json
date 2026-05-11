@@ -1,15 +1,15 @@
 {
-  "name": "wsc-formhelper-mui",
+  "name": "kes-formhelper-mui",
   "version": "0.1.0",
   "description": "Form helper components for MUI built on react-hook-form.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/keslavi/wsc-formhelper-mui.git"
+    "url": "git+https://github.com/keslavi/kes-formhelper-mui.git"
   },
   "bugs": {
-    "url": "https://github.com/keslavi/wsc-formhelper-mui/issues"
+    "url": "https://github.com/keslavi/kes-formhelper-mui/issues"
   },
-  "homepage": "https://github.com/keslavi/wsc-formhelper-mui#readme",
+  "homepage": "https://github.com/keslavi/kes-formhelper-mui#readme",
   "type": "module",
   "main": "dist/formhelper-mui.cjs",
   "module": "dist/formhelper-mui.js",
