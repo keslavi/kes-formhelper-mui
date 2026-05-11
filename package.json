@@ -1,6 +1,6 @@
 {
   "name": "kes-formhelper-mui",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Form helper components for MUI built on react-hook-form.",
   "repository": {
     "type": "git",
