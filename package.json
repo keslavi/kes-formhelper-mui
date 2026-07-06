@@ -1,6 +1,6 @@
 {
   "name": "kes-formhelper-mui",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Form helper components for MUI built on react-hook-form.",
   "repository": {
     "type": "git",
@@ -25,10 +25,16 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/formhelper-mui.js",
       "require": "./dist/formhelper-mui.cjs"
+    },
+    "./storybook-embed": {
+      "types": "./dist/storybook-embed.d.ts",
+      "import": "./dist/storybook-embed.js",
+      "require": "./dist/storybook-embed.cjs"
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "storybook-static"
   ],
   "keywords": [
     "react",
@@ -38,36 +44,47 @@
     "components"
   ],
   "scripts": {
-    "start": "start cmd /k \"npm run test-watch\" && concurrently --names \"fh,sb,koa,seed\" -c \"blue,yellow,green,cyan\" \"npm run dev\" \"npm run storybook\" \"cd ../server-koa && npm run dev\" \"cd ../seed && npm run dev\"",
+    "start": "node ./scripts/start.mjs",
     "dev": "vite",
-    "build": "tsc -p tsconfig.app.json --noEmit && vite build",
+    "build": "npm run build:lib && npm run storybook-build",
+    "build:lib": "tsc -p tsconfig.app.json --noEmit && vite build",
     "deploy:seed": "npm run build && node ./scripts/formhelper-deploy.js",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "lint": "eslint .",
     "preview": "vite preview",
-    "storybook": "storybook dev -p 6000",
+    "storybook": "node scripts/kill-dev-ports.mjs 5200 && storybook dev -p 5200 --exact-port --host 127.0.0.1",
     "storybook-build": "storybook build",
-    "storybook:deploy": "npm run storybook-build && node ./scripts/storybook-deploy.js",
-    "test": "vitest run --project=unit",
-    "test-watch": "vitest --project=unit"
+    "storybook-deploy": "npm run storybook-build && node ./scripts/storybook-deploy.js",
+    "prepublishOnly": "npm run build",
+    "test": "node scripts/kill-dev-ports.mjs 5300 && vitest --ui --watch --project=unit --api.port 5300",
+    "test-once": "vitest run --project=unit"
   },
   "peerDependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^7.3.9",
-    "@mui/lab": "^7.0.1-beta.23",
-    "@mui/material": "^7.3.9",
-    "@mui/styled-engine-sc": "^7.3.9",
-    "@mui/utils": "^7.3.9",
-    "@mui/x-data-grid": "^8.27.5",
-    "@mui/x-date-pickers": "^8.27.2",
+    "@mui/icons-material": "^9.1.1",
+    "@mui/lab": "^9.0.0-beta.5",
+    "@mui/material": "^9.1.2",
+    "@mui/styled-engine-sc": "^9.1.1",
+    "@mui/utils": "^9.1.1",
+    "@mui/x-data-grid": "^9.7.0",
+    "@mui/x-date-pickers": "^9.7.0",
     "react": ">=18",
     "react-dom": ">=18",
     "react-hook-form": ">=7"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^5.1.2",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@eslint/js": "^9.39.1",
+    "@mui/icons-material": "^9.1.1",
+    "@mui/lab": "^9.0.0-beta.5",
+    "@mui/material": "^9.1.2",
+    "@mui/styled-engine-sc": "^9.1.1",
+    "@mui/utils": "^9.1.1",
+    "@mui/x-data-grid": "^9.7.0",
+    "@mui/x-date-pickers": "^9.7.0",
     "@storybook/addon-a11y": "^10.3.5",
     "@storybook/addon-docs": "^10.3.5",
     "@storybook/addon-onboarding": "^10.3.5",
@@ -83,6 +100,7 @@
     "@vitejs/plugin-react": "^5.1.1",
     "@vitest/browser-playwright": "^4.0.18",
     "@vitest/coverage-v8": "^4.0.18",
+    "@vitest/ui": "4.0.18",
     "concurrently": "^9.2.1",
     "eslint": "^9.39.1",
     "eslint-plugin-react": "^7.37.5",

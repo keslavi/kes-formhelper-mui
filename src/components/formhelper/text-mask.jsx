@@ -7,7 +7,7 @@ import {
 } from "@mui/material";
 import IconVisibility from "@mui/icons-material/Visibility";
 import IconVisibilityOff from "@mui/icons-material/VisibilityOff";
-import { cleanParentProps, colProps } from "./helper";
+import { useCleanParentProps, pickColLayoutProps } from "./helper";
 import { useFormField } from "./form-provider";
 import { Info } from "./info";
 import { ColPadded } from "../grid";
@@ -322,8 +322,10 @@ export const TextMask = memo((props) => {
     };
   }, []);
 
+  const parentProps = useCleanParentProps(props, 'textField');
+
   return (
-    <ColPadded {...colProps(props)}>
+    <ColPadded {...pickColLayoutProps(props)}>
       hmm<br/>
       <MuiTextField
         fullWidth
@@ -341,7 +343,7 @@ export const TextMask = memo((props) => {
         onChange={onChange}
         onKeyDown={onKeyDown}
         value={displayValue}
-        {...cleanParentProps(props)}
+        {...parentProps}
         {...errorMui}
         {...(!props.persistent
           ? {

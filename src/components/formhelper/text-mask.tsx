@@ -2,8 +2,8 @@ import { memo, useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { TextField as MuiTextField, IconButton, InputAdornment } from '@mui/material';
 import IconVisibility from '@mui/icons-material/Visibility';
 import IconVisibilityOff from '@mui/icons-material/VisibilityOff';
-import { cleanParentProps } from './helper/clean-parent-props';
-import { colProps } from './helper/col-props';
+import { useCleanParentProps } from './helper/clean-parent-props';
+import { pickColLayoutProps } from './helper/clean-grid-props';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { Info } from './info';
 import { ColPadded } from '../grid';
@@ -145,7 +145,7 @@ export const TextMask = memo((props: TextMaskProps) => {
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { field, errorMui, valueProp } = useFormField(props);
+  const { field, errorMui, valueProp, identityProps } = useFormField(props);
 
   const [showValue, setShowValue] = useState(
     !(valueProp && (valueProp as any).value && String((valueProp as any).value).trim() !== '')
@@ -284,8 +284,10 @@ export const TextMask = memo((props: TextMaskProps) => {
     []
   );
 
+  const parentProps = useCleanParentProps(props, 'textField');
+
   return (
-    <ColPadded {...colProps(props)}>
+    <ColPadded {...pickColLayoutProps(props)}>
       <MuiTextField
         fullWidth
         size="small"
@@ -293,8 +295,7 @@ export const TextMask = memo((props: TextMaskProps) => {
           '& .MuiOutlinedInput-root': { minHeight: 34, overflow: 'visible' },
           '& .MuiOutlinedInput-input': { padding: '6px 8px' },
         }}
-        id={field.name}
-        name={field.name}
+        {...identityProps}
         label={props.label}
         inputRef={field.ref}
         onFocus={onFocus}
@@ -302,7 +303,7 @@ export const TextMask = memo((props: TextMaskProps) => {
         onChange={onChange}
         onKeyDown={onKeyDown}
         value={displayValue}
-        {...cleanParentProps(props)}
+        {...parentProps}
         {...errorMui}
         {...(!props.persistent
           ? {

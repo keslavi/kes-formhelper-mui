@@ -2,8 +2,8 @@ import { memo, useCallback, useState } from 'react';
 import { TextField as MuiTextField, IconButton, InputAdornment } from '@mui/material';
 import IconVisibility from '@mui/icons-material/Visibility';
 import IconVisibilityOff from '@mui/icons-material/VisibilityOff';
-import { cleanParentProps } from './helper/clean-parent-props';
-import { colProps } from './helper/col-props';
+import { useCleanParentProps } from './helper/clean-parent-props';
+import { pickColLayoutProps } from './helper/clean-grid-props';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { Info } from './info';
 import { ColPadded } from '../grid';
@@ -16,7 +16,7 @@ export type PasswordProps = UseFormFieldProps & {
 
 export const Password = memo((props: PasswordProps) => {
   const [showPassword, setShowPassword] = useState(false);
-  const { field, errorMui, valueProp } = useFormField(props);
+  const { field, errorMui, valueProp, identityProps } = useFormField(props);
 
   const onBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     field.onBlur(e.target.value);
@@ -28,18 +28,19 @@ export const Password = memo((props: PasswordProps) => {
     props.onChange?.(e as any);
   }, [field, props.onChange]);
 
+  const parentProps = useCleanParentProps(props, 'textField');
+
   return (
-    <ColPadded {...colProps(props)}>
+    <ColPadded {...pickColLayoutProps(props)}>
       <MuiTextField
         fullWidth
         type={showPassword ? 'text' : 'password'}
-        id={field.name}
-        name={field.name}
+        {...identityProps}
         label={props.label}
         inputRef={field.ref}
         onBlur={onBlur}
         onChange={onChange}
-        {...cleanParentProps(props)}
+        {...parentProps}
         {...valueProp}
         {...errorMui}
         slotProps={{

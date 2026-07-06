@@ -7,8 +7,8 @@ import {
 } from '@mui/material';
 import { color } from '../../theme-material';
 import { useFormField, UseFormFieldProps } from './form-provider';
-import { cleanParentProps } from './helper/clean-parent-props';
-import { colProps } from './helper/col-props';
+import { useCleanParentProps } from './helper/clean-parent-props';
+import { pickColLayoutProps } from './helper/clean-grid-props';
 import { ColPadded } from '../grid';
 import { isTruthy } from '../../utils/is-truthy';
 
@@ -21,7 +21,7 @@ export type CheckboxProps = UseFormFieldProps & {
 
 export const Checkbox = memo((props: CheckboxProps) => {
   const variant = props.variant ?? '';
-  const { field, error, errorMui } = useFormField(props);
+  const { field, error, errorMui, identityProps } = useFormField(props);
 
   const isChecked = useCallback(() => isTruthy(field.value ?? props.isChecked), [field.value, props.isChecked]);
 
@@ -61,18 +61,19 @@ export const Checkbox = memo((props: CheckboxProps) => {
     props.onBlur?.(e as any);
   }, [field, props.onBlur]);
 
+  const parentProps = useCleanParentProps(props, 'checkbox');
+
   return (
-    <ColPadded {...colProps(props)}>
+    <ColPadded {...pickColLayoutProps(props)}>
       <MuiFormControlLabel
         control={
           <MuiCheckbox
-            id={field.name}
-            name={field.name}
+            {...identityProps}
             onChange={onChange}
             onBlurCapture={onBlur}
             checked={isChecked()}
             color="success"
-            {...cleanParentProps(props)}
+            {...parentProps}
           />
         }
         label={<>&nbsp;{label}</>}

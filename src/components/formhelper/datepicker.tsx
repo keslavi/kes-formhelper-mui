@@ -2,8 +2,8 @@ import { memo, useCallback, useMemo } from 'react';
 import { TextField as MuiTextField } from '@mui/material';
 import dayjs from 'dayjs';
 import { isEmpty } from 'lodash';
-import { cleanParentProps } from './helper/clean-parent-props';
-import { colProps } from './helper/col-props';
+import { useCleanParentProps } from './helper/clean-parent-props';
+import { pickColLayoutProps } from './helper/clean-grid-props';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { ColPadded } from '../grid';
 
@@ -32,7 +32,7 @@ const normalizeDateInput = (raw?: any): string | undefined => {
 };
 
 export const Datepicker = memo((props: DatepickerProps) => {
-  const { field, errorMui, valueProp } = useFormField(props);
+  const { field, errorMui, valueProp, identityProps } = useFormField(props);
   const isReadOnly = !!props.readOnly;
 
   const attributes = useMemo(() => {
@@ -62,17 +62,19 @@ export const Datepicker = memo((props: DatepickerProps) => {
     props.onChange?.(e as any);
   }, [field, props.onChange]);
 
-  if (isReadOnly) {
-    const readOnlyFieldProps = { ...cleanParentProps(props) } as Record<string, unknown>;
-    delete readOnlyFieldProps.type;
+  const textFieldParentProps = useCleanParentProps(props, 'textField');
+  const readOnlyFieldProps = useMemo(() => {
+    const { type, ...rest } = textFieldParentProps as Record<string, unknown>;
+    return rest;
+  }, [textFieldParentProps]);
 
+  if (isReadOnly) {
     return (
-      <ColPadded {...colProps(props)}>
+      <ColPadded {...pickColLayoutProps(props)}>
         <MuiTextField
           fullWidth
           type="text"
-          id={field.name}
-          name={field.name}
+          {...identityProps}
           label={props.label}
           inputRef={field.ref}
           onBlur={field.onBlur}
@@ -97,17 +99,16 @@ export const Datepicker = memo((props: DatepickerProps) => {
   }
 
   return (
-    <ColPadded {...colProps(props)}>
+    <ColPadded {...pickColLayoutProps(props)}>
       <MuiTextField
         fullWidth
         type="date"
-        id={field.name}
-        name={field.name}
+        {...identityProps}
         label={props.label}
         inputRef={field.ref}
         onBlur={field.onBlur}
         onChange={onChange}
-        {...cleanParentProps(props)}
+        {...textFieldParentProps}
         {...normalizedValueProp}
         {...errorMui}
         slotProps={{

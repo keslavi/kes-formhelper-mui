@@ -53,8 +53,6 @@ export {
 	ArrayInput,
 	Input,
 	maskPattern,
-	cleanParentProps,
-	colProps,
 } from './formhelper';
 
 export type {

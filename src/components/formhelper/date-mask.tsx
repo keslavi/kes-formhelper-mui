@@ -4,8 +4,8 @@ import IconVisibility from '@mui/icons-material/Visibility';
 import IconVisibilityOff from '@mui/icons-material/VisibilityOff';
 import dayjs from 'dayjs';
 import { isEmpty } from 'lodash';
-import { cleanParentProps } from './helper/clean-parent-props';
-import { colProps } from './helper/col-props';
+import { useCleanParentProps } from './helper/clean-parent-props';
+import { pickColLayoutProps } from './helper/clean-grid-props';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { ColPadded } from '../grid';
 
@@ -18,7 +18,7 @@ export type DateMaskProps = UseFormFieldProps & {
 };
 
 export const DateMask = memo((props: DateMaskProps) => {
-  const { field, errorMui, valueProp } = useFormField(props);
+  const { field, errorMui, valueProp, identityProps } = useFormField(props);
 
   const hasValue = !!(valueProp && (valueProp as any).value && String((valueProp as any).value).trim() !== '');
   const [masked, setMasked] = useState(hasValue);
@@ -50,15 +50,29 @@ export const DateMask = memo((props: DateMaskProps) => {
 
   const inputStyle = { cursor: 'pointer' } as const;
 
-  const parentFieldProps = { ...cleanParentProps(props) } as Record<string, unknown>;
-  delete parentFieldProps.type;
+  const cleanedParentProps = useCleanParentProps(props, 'textField');
+  const parentFieldProps = useMemo(() => {
+    const { type, ...rest } = cleanedParentProps as Record<string, unknown>;
+    return rest;
+  }, [cleanedParentProps]);
 
-  const baseSharedProps = {
+  const testIdBase = useMemo(
+    () => (parentFieldProps['data-testid'] as string | undefined) ?? identityProps['data-testid'],
+    [parentFieldProps, identityProps],
+  );
+
+  const fieldIdentity = useCallback(
+    (suffix: string, includeName = false) => ({
+      id: `${identityProps.id}${suffix}`,
+      'data-testid': `${testIdBase}${suffix}`,
+      ...(includeName ? { name: identityProps.name } : {}),
+    }),
+    [identityProps, testIdBase],
+  );
+
+  const sharedFieldProps = {
     fullWidth: true,
-    id: field.name,
-    name: field.name,
     label: props.label,
-    inputRef: field.ref,
     onBlur,
     onChange,
     ...parentFieldProps,
@@ -106,11 +120,12 @@ export const DateMask = memo((props: DateMaskProps) => {
   };
 
   return (
-    <ColPadded {...colProps(props)}>
+    <ColPadded {...pickColLayoutProps(props)}>
       {/* Masked view — text only (no type=date) so native calendar never appears */}
       <MuiTextField
         className={masked ? '' : 'hidden'}
-        {...baseSharedProps}
+        {...sharedFieldProps}
+        {...fieldIdentity('-masked')}
         type="text"
         value="**/**/****"
         slotProps={slotMasked}
@@ -118,7 +133,9 @@ export const DateMask = memo((props: DateMaskProps) => {
       {/* Date input — only when !readOnly (native calendar allowed here) */}
       <MuiTextField
         className={!masked && !props.readOnly ? '' : 'hidden'}
-        {...baseSharedProps}
+        {...sharedFieldProps}
+        {...fieldIdentity('', true)}
+        inputRef={field.ref}
         type="date"
         {...valueProp}
         slotProps={slotDateEditable}
@@ -126,7 +143,9 @@ export const DateMask = memo((props: DateMaskProps) => {
       {/* Read-only formatted — text only, no native date picker */}
       <MuiTextField
         className={!masked && props.readOnly ? '' : 'hidden'}
-        {...baseSharedProps}
+        {...sharedFieldProps}
+        {...fieldIdentity('-readonly')}
+        inputRef={props.readOnly ? field.ref : undefined}
         type="text"
         value={(valueProp as any)?.value ? dayjs((valueProp as any).value).format('MM/DD/YYYY') : ''}
         slotProps={slotReadOnlyFormatted}

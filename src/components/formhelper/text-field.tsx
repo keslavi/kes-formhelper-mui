@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo } from 'react';
 import { TextField as MuiTextField } from '@mui/material';
-import { cleanParentProps } from './helper/clean-parent-props';
-import { colProps } from './helper/col-props';
+import { useCleanParentProps } from './helper/clean-parent-props';
+import { pickColLayoutProps } from './helper/clean-grid-props';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { Info } from './info';
 import { ColPadded } from '../grid';
@@ -22,7 +22,7 @@ export type TextFieldProps = UseFormFieldProps & {
 };
 
 export const TextField = memo((props: TextFieldProps) => {
-  const { field, errorMui, valueProp } = useFormField(props);
+  const { field, errorMui, valueProp, identityProps } = useFormField(props);
 
   const onBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     field.onBlur(e.target.value);
@@ -44,19 +44,20 @@ export const TextField = memo((props: TextFieldProps) => {
     autoComplete: props.autoComplete,
   }), [props.readOnly, props.maxLength, props.minLength, props.pattern, props.spellCheck, props.inputMode, props.autoComplete]);
 
+  const parentProps = useCleanParentProps(props, 'textField');
+
   return (
-    <ColPadded {...colProps(props)}>
+    <ColPadded {...pickColLayoutProps(props)}>
       <MuiTextField
         fullWidth
-        id={field.name}
-        name={field.name}
+        {...identityProps}
         label={props.label}
         {...(props.placeholder && { placeholder: props.placeholder })}
         inputRef={field.ref}
         onBlur={onBlur}
         onChange={onChange}
         autoFocus={props.autoFocus}
-        {...cleanParentProps(props)}
+        {...parentProps}
         {...valueProp}
         {...errorMui}
         slotProps={{ htmlInput: inputProps }}

@@ -157,6 +157,7 @@ export const useFormContext = (): FormContextValue => {
 
 export interface UseFormFieldProps {
   name: string;
+  'data-testid'?: string;
   control?: any;
   error?: { message?: string };
   helperText?: string;
@@ -166,11 +167,18 @@ export interface UseFormFieldProps {
   [key: string]: any;
 }
 
+export interface FormFieldIdentityProps {
+  id: string;
+  name: string;
+  'data-testid': string;
+}
+
 export interface UseFormFieldReturn {
   field: any;
   error: any;
   errorMui: { error?: boolean; helperText?: string };
   valueProp: { value?: any } | { defaultValue?: any } | Record<string, never>;
+  identityProps: FormFieldIdentityProps;
 }
 
 export const useFormField = (props: UseFormFieldProps): UseFormFieldReturn => {
@@ -212,5 +220,11 @@ export const useFormField = (props: UseFormFieldProps): UseFormFieldReturn => {
     valueProp = { defaultValue: props.defaultValue };
   }
 
-  return { field, error, errorMui, valueProp };
+  const identityProps: FormFieldIdentityProps = {
+    id: props.name,
+    name: props.name,
+    'data-testid': props.name,
+  };
+
+  return { field, error, errorMui, valueProp, identityProps };
 };

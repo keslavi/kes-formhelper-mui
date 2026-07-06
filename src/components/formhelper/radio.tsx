@@ -7,8 +7,8 @@ import {
   FormControlLabel,
   FormHelperText,
 } from '@mui/material';
-import { cleanParentProps } from './helper/clean-parent-props';
-import { colProps } from './helper/col-props';
+import { useCleanParentProps } from './helper/clean-parent-props';
+import { pickColLayoutProps } from './helper/clean-grid-props';
 import { Info } from './info';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { ColPadded } from '../grid';
@@ -28,7 +28,7 @@ export type RadioProps = UseFormFieldProps & {
 };
 
 export const Radio = memo((props: RadioProps) => {
-  const { field, error, valueProp } = useFormField(props);
+  const { field, error, valueProp, identityProps } = useFormField(props);
 
   const onBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     field.onBlur(e.target.value);
@@ -40,19 +40,20 @@ export const Radio = memo((props: RadioProps) => {
     props.onChange?.(e as any);
   }, [field, props.onChange]);
 
+  const parentProps = useCleanParentProps(props, 'radioGroup');
+
   return (
-    <ColPadded {...colProps(props)}>
+    <ColPadded {...pickColLayoutProps(props)}>
       <FormControl>
         <FormLabel>{props.label ?? ''}</FormLabel>
         {error && <FormHelperText className="Mui-error">{error.message}</FormHelperText>}
         <RadioGroup
           row={props.row}
-          id={field.name}
-          name={field.name}
+          {...identityProps}
           onBlur={onBlur}
           onChange={onChange}
           {...valueProp}
-          {...cleanParentProps(props)}
+          {...parentProps}
         >
           {props.optionsRadio.map(x => (
             <FormControlLabel

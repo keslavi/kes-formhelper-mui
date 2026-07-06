@@ -2,6 +2,7 @@ import { color } from '../../theme-material';
 import { Grid } from '@mui/material';
 import type { GridProps } from '@mui/material';
 import { isEmpty } from 'lodash';
+import { useCleanGridProps } from '../formhelper/helper/clean-grid-props';
 import React from 'react';
 
 interface RowHeaderProps extends Omit<GridProps, 'color'> {
@@ -29,6 +30,7 @@ export const RowHeader = ({
 
   const leftSize = isEmpty(rightcontent) ? 12 : size ?? 10;
   const rightSize = 12 - leftSize;
+  const gridProps = useCleanGridProps(rest as Record<string, unknown>, 'rowHeader');
 
   return (
     <Grid
@@ -42,13 +44,17 @@ export const RowHeader = ({
         paddingLeft: '0.5rem',
         paddingRight: '0.5rem',
       }}
-      {...rest}
+      {...gridProps}
     >
-      <Grid container size={leftSize} justifyContent="flex-start">
+      <Grid container size={leftSize} sx={{
+        justifyContent: "flex-start"
+      }}>
         <div>{leftContent2}</div>
       </Grid>
       {leftSize < 12 && (
-        <Grid container size={rightSize} justifyContent="flex-end">
+        <Grid container size={rightSize} sx={{
+          justifyContent: "flex-end"
+        }}>
           <div>{rightContent2}</div>
         </Grid>
       )}

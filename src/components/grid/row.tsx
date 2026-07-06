@@ -1,12 +1,16 @@
 import { Grid } from '@mui/material';
 import type { GridProps } from '@mui/material';
+import { useCleanGridProps } from '../formhelper/helper/clean-grid-props';
 import React from 'react';
 
 type RowProps = GridProps & {
   columns?: GridProps['columns'];
 };
 
-export const Row = ({ children, columns, ...rest }: RowProps) => (
+export const Row = ({ children, columns, ...rest }: RowProps) => {
+  const gridProps = useCleanGridProps(rest as Record<string, unknown>, 'row');
+
+  return (
   <Grid
     container
     spacing={2}
@@ -19,11 +23,12 @@ export const Row = ({ children, columns, ...rest }: RowProps) => (
         paddingBottom: '6px',
       },
     })}
-    {...rest}
+    {...gridProps}
   >
     {children}
   </Grid>
-);
+  );
+};
 
 Row.displayName = 'Row';
 

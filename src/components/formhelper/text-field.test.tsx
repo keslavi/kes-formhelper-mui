@@ -135,4 +135,14 @@ describe('TextField', () => {
     );
     expect(screen.getByTestId('name-field').querySelector('input')).toBeVisible();
   });
+
+  it('allows parent data-testid to override the default from field name', () => {
+    render(
+      <TestHarness item={{}}>
+        <Input name="name" label="Name" data-testid="custom-test-id" />
+      </TestHarness>
+    );
+    expect(screen.getByTestId('custom-test-id')).toHaveAttribute('data-testid', 'custom-test-id');
+    expect(screen.queryByTestId('name')).not.toBeInTheDocument();
+  });
 });

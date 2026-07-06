@@ -7,8 +7,8 @@ import {
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { cleanParentProps } from './helper/clean-parent-props';
-import { colProps } from './helper/col-props';
+import { useCleanParentProps } from './helper/clean-parent-props';
+import { pickColLayoutProps } from './helper/clean-grid-props';
 import { getOptionLabelsByKeys } from './helper/option-display';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { Info } from './info';
@@ -31,7 +31,7 @@ export type SelectCheckboxProps = UseFormFieldProps & {
 
 export const SelectCheckbox = memo((props: SelectCheckboxProps) => {
   const { optionsCheckbox: options, label, info, ...restProps } = props;
-  const { field, errorMui } = useFormField(props);
+  const { field, errorMui, identityProps } = useFormField(props);
   const isReadOnly = !!props.readOnly;
 
   const onBlur = useCallback((e: React.FocusEvent) => {
@@ -54,14 +54,15 @@ export const SelectCheckbox = memo((props: SelectCheckboxProps) => {
     () => getOptionLabelsByKeys(options, field.value).join(', '),
     [options, field.value]
   );
+  const textFieldParentProps = useCleanParentProps(restProps, 'textField');
+  const autocompleteParentProps = useCleanParentProps(restProps, 'autocomplete');
 
   if (isReadOnly) {
     return (
-      <ColPadded {...colProps(props)}>
+      <ColPadded {...pickColLayoutProps(props)}>
         <TextField
           inputRef={field.ref}
-          id={field.name}
-          name={field.name}
+          {...identityProps}
           label={label}
           variant="outlined"
           fullWidth
@@ -69,7 +70,7 @@ export const SelectCheckbox = memo((props: SelectCheckboxProps) => {
           placeholder="Please Select"
           onBlur={onBlur}
           {...errorMui}
-          {...cleanParentProps(restProps)}
+          {...textFieldParentProps}
           slotProps={{ htmlInput: { readOnly: true } }}
         />
         {info && <Info id={`${field.name}Info`} info={info} />}
@@ -78,9 +79,9 @@ export const SelectCheckbox = memo((props: SelectCheckboxProps) => {
   }
 
   return (
-    <ColPadded {...colProps(props)}>
+    <ColPadded {...pickColLayoutProps(props)}>
       <MuiAutocomplete
-        id={field.name}
+        {...identityProps}
         multiple
         onBlur={onBlur}
         onChange={onChange}
@@ -90,7 +91,7 @@ export const SelectCheckbox = memo((props: SelectCheckboxProps) => {
         getOptionLabel={o => o?.text ?? ''}
         isOptionEqualToValue={(o, v) => o?.key === v?.key}
         value={selectedOptions}
-        {...cleanParentProps(restProps)}
+        {...autocompleteParentProps}
         renderOption={(optProps, option, { selected }) => {
           const { key, ...rest } = optProps as any;
           return (

@@ -5,8 +5,8 @@ import {
   FormHelperText,
 } from '@mui/material';
 import { color } from '../../theme-material';
-import { cleanParentProps } from './helper/clean-parent-props';
-import { colProps } from './helper/col-props';
+import { useCleanParentProps } from './helper/clean-parent-props';
+import { pickColLayoutProps } from './helper/clean-grid-props';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { Info } from './info';
 import { ColPadded } from '../grid';
@@ -20,7 +20,7 @@ export type TextareaProps = UseFormFieldProps & {
 };
 
 export const Textarea = memo((props: TextareaProps) => {
-  const { field, errorMui, valueProp } = useFormField(props);
+  const { field, errorMui, valueProp, identityProps } = useFormField(props);
 
   const onBlur = useCallback((e: React.FocusEvent<HTMLTextAreaElement>) => {
     field.onBlur(e.target.value);
@@ -61,9 +61,10 @@ export const Textarea = memo((props: TextareaProps) => {
 
   const hasError = errorMui?.error || hasCountError;
   const labelStyle = hasError ? { color: color.primary.red } : {};
+  const parentProps = useCleanParentProps(props, 'textarea');
 
   return (
-    <ColPadded {...colProps(props)}>
+    <ColPadded {...pickColLayoutProps(props)}>
       <InputLabel
         htmlFor={field.name}
         style={{
@@ -93,13 +94,12 @@ export const Textarea = memo((props: TextareaProps) => {
           lineHeight: 1.5,
           color: hasError ? color.primary.red : 'inherit',
         }}
-        id={field.name}
-        name={field.name}
+        {...identityProps}
         {...(props.minRows && { minRows: props.minRows })}
         ref={field.ref}
         onBlur={onBlur}
         onChange={onChange}
-        {...cleanParentProps(props)}
+        {...parentProps}
         {...valueProp}
       />
       {props.info && <Info id={`${field.name}Info`} info={props.info} />}

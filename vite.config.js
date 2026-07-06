@@ -13,16 +13,26 @@ const dirname = typeof __dirname !== 'undefined' ? __dirname : path.dirname(file
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
+  server: {
+    port: 5100,
+    strictPort: true,
+    open: true,
+  },
   plugins: [
     react(),
-    dts({ include: ['src'], insertTypesEntry: true }),
+    dts({
+      include: ['src/index.ts', 'src/storybook-embed.tsx', 'src/storybook-constants.ts'],
+      tsconfigPath: './tsconfig.app.json',
+      insertTypesEntry: true,
+    }),
   ],
   build: {
     lib: {
-      entry: resolve(dirname, 'src/index.ts'),
-      name: 'FormhelperMui',
-      fileName: format => `formhelper-mui.${format === 'es' ? 'js' : 'cjs'}`,
-      formats: ['es', 'cjs']
+      entry: {
+        'formhelper-mui': resolve(dirname, 'src/index.ts'),
+        'storybook-embed': resolve(dirname, 'src/storybook-embed.tsx'),
+      },
+      formats: ['es', 'cjs'],
     },
     rollupOptions: {
       // Externalize deps that should not be bundled into the library
@@ -41,6 +51,9 @@ export default defineConfig({
     }
   },
   test: {
+    api: {
+      port: 5300,
+    },
     projects: [
     {
       extends: true,
@@ -74,7 +87,6 @@ export default defineConfig({
             browser: 'chromium'
           }]
         },
-        setupFiles: ['.storybook/vitest.setup.js']
       }
     }]
   }

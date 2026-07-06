@@ -2,7 +2,7 @@ import { memo, useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { TextField as MuiTextField, IconButton, InputAdornment } from "@mui/material";
 import IconVisibility from "@mui/icons-material/Visibility";
 import IconVisibilityOff from "@mui/icons-material/VisibilityOff";
-import { cleanParentProps, colProps } from "./helper";
+import { useCleanParentProps, pickColLayoutProps } from "./helper";
 import { useFormField } from "./form-provider";
 import { Info } from "./info";
 import { ColPadded } from "../grid";
@@ -281,8 +281,10 @@ export const TextMask = memo((props) => {
     };
   }, []);
 
+  const parentProps = useCleanParentProps(props, 'textField');
+
   return (
-    <ColPadded {...colProps(props)}>
+    <ColPadded {...pickColLayoutProps(props)}>
       <MuiTextField
         fullWidth
         id={field.name}
@@ -293,7 +295,7 @@ export const TextMask = memo((props) => {
         onChange={onChange}
         onKeyDown={onKeyDown}
         value={displayValue}
-        {...cleanParentProps(props)}
+        {...parentProps}
         {...errorMui}
         {...(!isPersistent
           ? {

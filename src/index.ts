@@ -66,8 +66,6 @@ export {
   ArrayInput,
   Input,
   maskPattern,
-  cleanParentProps,
-  colProps,
 } from './components/formhelper';
 export type {
   FormProviderProps,

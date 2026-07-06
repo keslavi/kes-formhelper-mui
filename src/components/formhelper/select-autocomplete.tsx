@@ -5,8 +5,8 @@ import {
   InputLabel as MuiInputLabel,
 } from '@mui/material';
 import IconKeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
-import { cleanParentProps } from './helper/clean-parent-props';
-import { colProps } from './helper/col-props';
+import { useCleanParentProps } from './helper/clean-parent-props';
+import { pickColLayoutProps } from './helper/clean-grid-props';
 import { getOptionLabelByKey } from './helper/option-display';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { Info } from './info';
@@ -27,7 +27,7 @@ export type SelectAutocompleteProps = UseFormFieldProps & {
 
 export const SelectAutocomplete = memo((props: SelectAutocompleteProps) => {
   const options = useMemo(() => props.options ?? [], [props.options]);
-  const { field, errorMui } = useFormField(props);
+  const { field, errorMui, identityProps } = useFormField(props);
   const isReadOnly = !!props.readOnly;
 
   const placeholder = props.placeholder !== undefined ? props.placeholder : 'Please Select';
@@ -50,21 +50,22 @@ export const SelectAutocomplete = memo((props: SelectAutocompleteProps) => {
   }, [field, props.onChange]);
 
   const displayValue = useMemo(() => getOptionLabelByKey(options, field.value), [options, field.value]);
+  const textFieldParentProps = useCleanParentProps(props, 'textField');
+  const autocompleteParentProps = useCleanParentProps(props, 'autocomplete');
 
   if (isReadOnly) {
     return (
-      <ColPadded {...colProps(props)}>
+      <ColPadded {...pickColLayoutProps(props)}>
         <MuiTextField
           fullWidth
-          id={field.name}
-          name={field.name}
+          {...identityProps}
           label={props.label}
           inputRef={field.ref}
           onBlur={onBlur}
           value={displayValue}
           placeholder={placeholder}
           {...errorMui}
-          {...cleanParentProps(props)}
+          {...textFieldParentProps}
           slotProps={{ htmlInput: { readOnly: true } }}
         />
         {props.info && <Info id={`${field.name}Info`} info={props.info} />}
@@ -73,9 +74,9 @@ export const SelectAutocomplete = memo((props: SelectAutocompleteProps) => {
   }
 
   return (
-    <ColPadded {...colProps(props)}>
+    <ColPadded {...pickColLayoutProps(props)}>
       <MuiAutocomplete
-        id={field.name}
+        {...identityProps}
         options={options}
         getOptionLabel={o => o?.text ?? ''}
         onChange={onChange}
@@ -97,7 +98,7 @@ export const SelectAutocomplete = memo((props: SelectAutocompleteProps) => {
             {props.info && <Info id={`${field.name}Info`} info={props.info} />}
           </>
         )}
-        {...cleanParentProps(props)}
+        {...autocompleteParentProps}
       />
     </ColPadded>
   );

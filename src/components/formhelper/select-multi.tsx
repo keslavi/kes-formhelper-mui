@@ -1,8 +1,8 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 import { TextField, Autocomplete as MuiAutocomplete } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { cleanParentProps } from './helper/clean-parent-props';
-import { colProps } from './helper/col-props';
+import { useCleanParentProps } from './helper/clean-parent-props';
+import { pickColLayoutProps } from './helper/clean-grid-props';
 import { getOptionLabelsByKeys } from './helper/option-display';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { Info } from './info';
@@ -22,7 +22,7 @@ export type SelectMultiProps = UseFormFieldProps & {
 };
 
 export const SelectMulti = memo((props: SelectMultiProps) => {
-  const { field, errorMui } = useFormField(props);
+  const { field, errorMui, identityProps } = useFormField(props);
   const isReadOnly = !!props.readOnly;
   const [inputValue, setInputValue] = useState('');
 
@@ -57,14 +57,15 @@ export const SelectMulti = memo((props: SelectMultiProps) => {
     () => getOptionLabelsByKeys(props.optionsMulti, field.value).join(', '),
     [props.optionsMulti, field.value]
   );
+  const textFieldParentProps = useCleanParentProps(props, 'textField');
+  const autocompleteParentProps = useCleanParentProps(props, 'autocomplete');
 
   if (isReadOnly) {
     return (
-      <ColPadded {...colProps(props)}>
+      <ColPadded {...pickColLayoutProps(props)}>
         <TextField
           inputRef={field.ref}
-          id={field.name}
-          name={field.name}
+          {...identityProps}
           label={props.label}
           variant="outlined"
           fullWidth
@@ -72,7 +73,7 @@ export const SelectMulti = memo((props: SelectMultiProps) => {
           placeholder={placeholder}
           onBlur={onBlur}
           {...errorMui}
-          {...cleanParentProps(props)}
+          {...textFieldParentProps}
           slotProps={{ htmlInput: { readOnly: true } }}
         />
         {props.info && <Info id={`${field.name}Info`} info={props.info} />}
@@ -81,9 +82,9 @@ export const SelectMulti = memo((props: SelectMultiProps) => {
   }
 
   return (
-    <ColPadded {...colProps(props)}>
+    <ColPadded {...pickColLayoutProps(props)}>
       <MuiAutocomplete
-        id={field.name}
+        {...identityProps}
         multiple
         onBlur={onBlur}
         onChange={onChange}
@@ -94,7 +95,7 @@ export const SelectMulti = memo((props: SelectMultiProps) => {
         isOptionEqualToValue={(o, v) => o?.key === v?.key}
         popupIcon={<KeyboardArrowDownIcon />}
         value={selectedOptions}
-        {...cleanParentProps(props)}
+        {...autocompleteParentProps}
         renderInput={params => (
           <TextField
             {...params}
