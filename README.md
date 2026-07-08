@@ -12,10 +12,12 @@ npm install kes-formhelper-mui
 
 This package expects these to be installed by the consuming app:
 
-- react, react-dom
-- @mui/material, @mui/icons-material, @mui/lab, @mui/x-date-pickers, @mui/x-data-grid
+- react, react-dom (>=18)
+- @mui/material, @mui/icons-material (^9)
 - @emotion/react, @emotion/styled
-- react-hook-form
+- react-hook-form (>=7)
+
+Validation resolvers (yup, zod, etc.) and `@hookform/resolvers` are optional and supplied by the host app.
 
 ## Usage
 

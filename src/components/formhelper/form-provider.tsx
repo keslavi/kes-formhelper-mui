@@ -4,7 +4,7 @@ import {
   useMemo,
   useEffect,
   useRef,
-  ReactNode,
+  type ReactNode,
 } from 'react';
 import {
   useForm,
@@ -17,6 +17,10 @@ import {
 } from 'react-hook-form';
 
 import { isTruthy } from '../../utils/is-truthy';
+import {
+  buildFieldErrorState,
+  type FieldErrorProp,
+} from './helper/field-errors';
 
 // ---------------------------------------------------------------------------
 // Context
@@ -41,6 +45,25 @@ const formMethodsRegistry = new Map<string, UseFormReturn<any>>();
 
 // Re-export for components that need it directly
 export { useRealController };
+export type { FieldErrorProp } from './helper/field-errors';
+export {
+  collectFieldErrorMessages,
+  collectParentErrorMessages,
+  renderFieldErrorMessages,
+} from './helper/field-errors';
+
+function withResolverCriteriaMode<T extends FieldValues>(
+  options: UseFormProps<T> = {},
+): UseFormProps<T> {
+  if (options.criteriaMode || !options.resolver) {
+    return options;
+  }
+
+  return {
+    ...options,
+    criteriaMode: 'all',
+  };
+}
 
 // ---------------------------------------------------------------------------
 // useFormProvider
@@ -49,11 +72,11 @@ export { useRealController };
 export const useFormProvider = <T extends FieldValues = FieldValues>(
   options: UseFormProps<T> = {}
 ): UseFormReturn<T> & { _formId: string } => {
-  const formMethods = useForm<T>({
+  const formMethods = useForm<T>(withResolverCriteriaMode({
     defaultValues: options.defaultValues,
     resolver: options.resolver,
     ...options,
-  });
+  }));
 
   const formId = useRef(Math.random().toString(36).substr(2, 9)).current;
   formMethodsRegistry.set(formId, formMethods as UseFormReturn<any>);
@@ -88,11 +111,11 @@ export const FormProvider = ({
   formMethods: externalFormMethods,
 }: FormProviderProps) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const frmMethods = externalFormMethods ?? useForm<any>({
+  const frmMethods = externalFormMethods ?? useForm<any>(withResolverCriteriaMode({
     defaultValues: formOptions.defaultValues ?? {},
     resolver: formOptions.resolver,
     ...formOptions,
-  });
+  }));
 
   const { control, formState, reset, register, handleSubmit, watch, setValue, getValues } = frmMethods;
   const errors = formState?.errors ?? {};
@@ -159,7 +182,7 @@ export interface UseFormFieldProps {
   name: string;
   'data-testid'?: string;
   control?: any;
-  error?: { message?: string };
+  error?: FieldErrorProp;
   helperText?: string;
   defaultValue?: any;
   value?: any;
@@ -176,41 +199,40 @@ export interface FormFieldIdentityProps {
 export interface UseFormFieldReturn {
   field: any;
   error: any;
-  errorMui: { error?: boolean; helperText?: string };
+  errorMessages: string[];
+  errorMui: { error?: boolean; helperText?: ReactNode };
   valueProp: { value?: any } | { defaultValue?: any } | Record<string, never>;
   identityProps: FormFieldIdentityProps;
 }
 
 export const useFormField = (props: UseFormFieldProps): UseFormFieldReturn => {
-  let field: any, error: any;
-  const errorMui: { error?: boolean; helperText?: string } = {};
+  const ctx = useContext(FormContext);
+  const control = props.control ?? ctx?.control;
+
+  if (!control) {
+    console.warn('useFormField: no FormProvider or control prop found for field', props.name);
+    throw new Error('Form control is not available. Make sure FormProvider is properly configured.');
+  }
+
+  const { field, fieldState } = useRealController({ control, name: props.name });
+  const fieldStateError = fieldState.error;
+
+  let errorMessages: string[] = [];
+  let errorMui: { error?: boolean; helperText?: ReactNode } = {};
   let valueProp: Record<string, any> = {};
 
-  try {
-    if (props.control) {
-      const result = useRealController({ control: props.control, name: props.name });
-      field = result.field;
-      error = props.error
-        ? { message: props.error.message ?? props.helperText ?? `${props.name}: custom error` }
-        : result.fieldState.error;
-    } else {
-      const result = useController(props);
-      field = result.field;
-      error = props.error
-        ? { message: props.error.message ?? props.helperText ?? `${props.name}: custom error` }
-        : result.fieldState.error;
-    }
-  } catch (err) {
-    const result = useController(props);
-    field = result.field;
-    error = result.fieldState.error;
-    console.warn(`${props.name} - Error in useFormField:`, err);
-  }
+  const errorState = buildFieldErrorState(
+    fieldStateError,
+    props.error,
+    props.helperText,
+    props.name,
+  );
+  errorMessages = errorState.messages;
+  errorMui = errorState.errorMui;
 
-  if (error) {
-    errorMui.error = true;
-    errorMui.helperText = error?.message ?? props.helperText ?? '?no error message?';
-  }
+  const error = errorMessages.length
+    ? { message: errorMessages[0], messages: errorMessages }
+    : undefined;
 
   if (!props.defaultValue) {
     if (!isTruthy(props.unbound)) {
@@ -223,8 +245,8 @@ export const useFormField = (props: UseFormFieldProps): UseFormFieldReturn => {
   const identityProps: FormFieldIdentityProps = {
     id: props.name,
     name: props.name,
-    'data-testid': props.name,
+    'data-testid': props['data-testid'] ?? props.name,
   };
 
-  return { field, error, errorMui, valueProp, identityProps };
+  return { field, error, errorMessages, errorMui, valueProp, identityProps };
 };

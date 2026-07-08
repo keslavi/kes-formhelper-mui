@@ -27,7 +27,7 @@ export type SelectProps = UseFormFieldProps & {
 };
 
 export const Select = React.memo((props: SelectProps) => {
-  const { field, error, valueProp, identityProps } = useFormField(props);
+  const { field, errorMui, valueProp, identityProps } = useFormField(props);
   const isReadOnly = !!props.readOnly;
 
   const renderedOptions = useMemo(() =>
@@ -47,8 +47,7 @@ export const Select = React.memo((props: SelectProps) => {
     props.onChange?.(e as any);
   }, [field, props.onChange]);
 
-  const hasError = !!error || !!props.error;
-  const errorMessage = error?.message ?? (typeof props.error === 'object' ? props.error?.message : props.error);
+  const hasError = !!errorMui.error;
 
   const rawValue = (field?.value ?? (valueProp as any)?.value ?? (valueProp as any)?.defaultValue) as unknown;
   const displayValue = useMemo(() => getOptionLabelByKey(props.options, rawValue), [props.options, rawValue]);
@@ -65,7 +64,7 @@ export const Select = React.memo((props: SelectProps) => {
           inputRef={field.ref}
           onBlur={onBlur}
           value={displayValue}
-          {...(hasError ? { error: true, helperText: errorMessage } : {})}
+          {...(hasError ? { error: true, helperText: errorMui.helperText } : {})}
           {...textFieldParentProps}
           slotProps={{ htmlInput: { readOnly: true } }}
         />
@@ -97,9 +96,9 @@ export const Select = React.memo((props: SelectProps) => {
         >
           {renderedOptions}
         </MuiSelect>
-        {errorMessage && (
+        {errorMui.error && (
           <div style={{ color: 'red', fontSize: '0.75rem', marginTop: 3 }}>
-            {errorMessage}
+            {errorMui.helperText}
           </div>
         )}
       </FormControl>

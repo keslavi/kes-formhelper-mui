@@ -24,6 +24,12 @@ describe('cleanParentProps', () => {
     expect(result).not.toHaveProperty('onBlur');
   });
 
+  it('passes disabled through to radioGroup', () => {
+    expect(
+      cleanParentProps({ name: 'choice', disabled: true }, 'radioGroup'),
+    ).toEqual({ disabled: true });
+  });
+
   it('strips grid col props and form-only props', () => {
     const onClick = vi.fn();
     expect(

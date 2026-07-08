@@ -85,7 +85,9 @@ const WHITELIST_KEYS: Record<CleanParentPropsTarget, readonly string[]> = {
   ],
   radioGroup: [
     ...SHARED_KEYS.base,
+    ...SHARED_KEYS.disabled,
     ...SHARED_KEYS.sx,
+    ...SHARED_KEYS.readOnly,
   ],
   autocomplete: [
     ...SHARED_KEYS.base,

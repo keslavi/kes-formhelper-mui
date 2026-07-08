@@ -28,7 +28,7 @@ export type RadioProps = UseFormFieldProps & {
 };
 
 export const Radio = memo((props: RadioProps) => {
-  const { field, error, valueProp, identityProps } = useFormField(props);
+  const { field, errorMui, valueProp, identityProps } = useFormField(props);
 
   const onBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     field.onBlur(e.target.value);
@@ -44,9 +44,11 @@ export const Radio = memo((props: RadioProps) => {
 
   return (
     <ColPadded {...pickColLayoutProps(props)}>
-      <FormControl>
+      <FormControl error={!!errorMui.error}>
         <FormLabel>{props.label ?? ''}</FormLabel>
-        {error && <FormHelperText className="Mui-error">{error.message}</FormHelperText>}
+        {errorMui.error && (
+          <FormHelperText className="Mui-error">{errorMui.helperText}</FormHelperText>
+        )}
         <RadioGroup
           row={props.row}
           {...identityProps}

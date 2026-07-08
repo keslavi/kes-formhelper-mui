@@ -1,5 +1,6 @@
 import { useFieldArray } from 'react-hook-form';
 import { useFormContext } from './form-provider';
+import { collectFieldErrorMessages, renderFieldErrorMessages } from './helper/field-errors';
 import { Col } from '../grid/col';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -32,6 +33,9 @@ export const ArrayInput = (props: ArrayInputProps) => {
   const { fields, append, remove } = useFieldArray({ control, name });
 
   const error = (errors as any)?.[name];
+  const arrayErrorMessages = collectFieldErrorMessages(error);
+  const itemErrorMessages = (index: number) =>
+    collectFieldErrorMessages((errors as any)?.[name]?.[index]);
 
   return (
     <Col size={size as any}>
@@ -68,8 +72,8 @@ export const ArrayInput = (props: ArrayInputProps) => {
               fullWidth
               size="small"
               disabled={disabled}
-              error={!!(error && (errors as any)?.[name]?.[index])}
-              helperText={(errors as any)?.[name]?.[index]?.message}
+              error={itemErrorMessages(index).length > 0}
+              helperText={renderFieldErrorMessages(itemErrorMessages(index))}
             />
             <IconButton
               type="button"
@@ -83,9 +87,9 @@ export const ArrayInput = (props: ArrayInputProps) => {
           </Box>
         ))}
 
-        {error && typeof error.message === 'string' && (
+        {arrayErrorMessages.length > 0 && (
           <Box sx={{ color: 'error.main', fontSize: '0.75rem', mt: 0.5 }}>
-            {error.message}
+            {renderFieldErrorMessages(arrayErrorMessages)}
           </Box>
         )}
       </Box>

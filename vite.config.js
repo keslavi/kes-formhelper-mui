@@ -36,7 +36,7 @@ export default defineConfig({
     },
     rollupOptions: {
       // Externalize deps that should not be bundled into the library
-      external: ['react', 'react-dom', 'react/jsx-runtime', '@mui/material', '@mui/system', '@mui/utils', '@mui/styled-engine-sc', '@mui/icons-material', '@mui/lab', '@mui/x-date-pickers', '@emotion/react', '@emotion/styled', 'react-hook-form', '@hookform/resolvers', 'yup'],
+      external: ['react', 'react-dom', 'react/jsx-runtime', '@mui/material', '@mui/system', '@mui/icons-material', '@emotion/react', '@emotion/styled', 'react-hook-form', '@hookform/resolvers', 'yup'],
       output: {
         // Provide globals for UMD build (not used here but good practice)
         globals: {

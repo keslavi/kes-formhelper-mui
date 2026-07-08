@@ -351,6 +351,47 @@ export const TextFieldStory = {
   ),
 };
 
+const multiErrorSchema = yup.object({
+  email: yup
+    .string()
+    .required('Email is required')
+    .email('Must be a valid email address')
+    .min(10, 'Must be at least 10 characters'),
+});
+
+const MultipleValidationErrorsDemo = () => {
+  const formMethods = useFormProvider({
+    resolver: yupResolver(multiErrorSchema),
+    defaultValues: { email: 'a' },
+  });
+
+  return (
+    <Fieldset legend="Multiple validation errors on one field">
+      <Row>
+        <Col size={12}>
+          <p style={{ margin: '0 0 12px' }}>
+            The email field has three yup rules. With the initial value <code>a</code>, click
+            {' '}<strong>Submit</strong> to see every failing rule listed below the field.
+          </p>
+        </Col>
+      </Row>
+      <FormProvider formMethods={formMethods} onSubmit={(data) => alert(JSON.stringify(data))}>
+        <Row>
+          <Input name="email" label="Email" size={6} />
+          <Col size={12}>
+            <Button type="submit" variant="contained" size="small">Submit</Button>
+          </Col>
+        </Row>
+      </FormProvider>
+    </Fieldset>
+  );
+};
+
+export const MultipleValidationErrorsStory = {
+  name: 'TextField — Multiple Validation Errors',
+  render: () => <MultipleValidationErrorsDemo />,
+};
+
 export const PasswordStory = {
   name: 'Password',
   render: () => (

@@ -10,7 +10,13 @@ export type {
 	FormProviderProps,
 	UseFormFieldProps,
 	UseFormFieldReturn,
+	FieldErrorProp,
 } from './form-provider';
+export {
+	collectFieldErrorMessages,
+	collectParentErrorMessages,
+	renderFieldErrorMessages,
+} from './helper/field-errors';
 
 export { Label } from './label';
 export type { LabelProps } from './label';

@@ -1,3 +1,4 @@
+import * as yup from 'yup';
 import { TestHarness } from './test/testHarness';
 import { Input } from './input';
 import { Row } from '../grid';
@@ -75,6 +76,38 @@ describe('TextField', () => {
     await user.click(input);
     await user.tab();
     expect(mockOnBlur).toHaveBeenCalled();
+  });
+
+  it('displays multiple parent error messages', () => {
+    render(
+      <TestHarness item={{}} noResults>
+        <Input
+          name="email"
+          label="Email"
+          error={{ messages: ['Invalid email format', 'Must be unique'] }}
+          data-testid="email-field"
+        />
+      </TestHarness>,
+    );
+    expect(screen.getByText('Invalid email format')).toBeVisible();
+    expect(screen.getByText('Must be unique')).toBeVisible();
+  });
+
+  it('displays multiple yup validation errors on submit', async () => {
+    const user = userEvent.setup();
+    const schema = yup.object({
+      email: yup.string().required('required').email('bad email').min(10, 'too short'),
+    });
+    render(
+      <TestHarness item={{ email: 'a' }} schema={schema}>
+        <Input name="email" label="Email" data-testid="email-field" />
+      </TestHarness>,
+    );
+    await user.click(screen.getByRole('button', { name: /submit/i }));
+    await waitFor(() => {
+      expect(screen.getByText('bad email')).toBeVisible();
+      expect(screen.getByText('too short')).toBeVisible();
+    });
   });
 
   it('displays error message when error prop is passed', () => {
