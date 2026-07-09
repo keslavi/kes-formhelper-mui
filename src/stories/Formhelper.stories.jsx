@@ -12,7 +12,7 @@ import {
   Row,
   TextareaDebug,
   maskPattern,
-} from '../components';
+} from '@formhelper';
 
 export default {
   title: 'Formhelper',

@@ -1,8 +1,7 @@
 import { fn } from 'storybook/test';
 import { useState } from 'react';
 import { Button } from '@mui/material';
-import { ModalCommon } from '../components/modal/modal-common';
-import { ModalConfirmExit } from '../components/modal/modal-confirm-exit';
+import { ModalCommon, ModalConfirmExit } from '@formhelper';
 
 export default {
   title: 'Components/Modal',

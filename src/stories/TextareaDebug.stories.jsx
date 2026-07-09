@@ -1,4 +1,4 @@
-import { TextareaDebug } from '../components/textarea-debug/textarea-debug';
+import { TextareaDebug } from '@formhelper';
 
 const sampleValue = {
   id: 42,

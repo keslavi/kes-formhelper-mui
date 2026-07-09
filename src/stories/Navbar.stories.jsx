@@ -1,5 +1,5 @@
 import { Button } from '@mui/material';
-import { Navbar } from '../components/navbar/navbar';
+import { Navbar } from '@formhelper';
 
 export default {
   title: 'Components/Navbar',

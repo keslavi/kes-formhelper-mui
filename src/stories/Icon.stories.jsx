@@ -1,5 +1,5 @@
 import { fn } from 'storybook/test';
-import { Icon, iconType } from '../components/icon/icon';
+import { Icon, iconType } from '@formhelper';
 
 export default {
   title: 'Components/Icon',

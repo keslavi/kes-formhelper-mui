@@ -1,5 +1,5 @@
 import { Button, Typography } from '@mui/material';
-import { NavSticky } from '../components/nav-sticky/nav-sticky';
+import { NavSticky } from '@formhelper';
 
 export default {
   title: 'Components/NavSticky',

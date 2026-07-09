@@ -34,7 +34,8 @@
   },
   "files": [
     "dist",
-    "storybook-static"
+    "storybook-static",
+    "src/stories"
   ],
   "keywords": [
     "react",

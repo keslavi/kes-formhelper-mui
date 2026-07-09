@@ -11,7 +11,7 @@ import {
   Input,
   Row,
   TextareaDebug,
-} from '../components';
+} from '@formhelper';
 
 export default {
   title: 'Formhelper/Workbench',

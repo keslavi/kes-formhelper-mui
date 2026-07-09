@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import { Col, ColPadded, Row, TableRows } from '../components';
+import { Col, ColPadded, Row, TableRows } from '@formhelper';
 
 export default {
   title: 'Components/Grid',

@@ -1,5 +1,5 @@
 import { Button, Typography } from '@mui/material';
-import { Fieldset } from '../components/fieldset/fieldset';
+import { Fieldset } from '@formhelper';
 
 export default {
   title: 'Components/Fieldset',

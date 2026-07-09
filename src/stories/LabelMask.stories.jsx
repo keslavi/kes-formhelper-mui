@@ -1,4 +1,4 @@
-import { LabelMask, maskPattern } from '../components';
+import { LabelMask, maskPattern } from '@formhelper';
 
 export default {
   title: 'Components/LabelMask',
