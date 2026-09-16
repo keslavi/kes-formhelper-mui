@@ -2,7 +2,6 @@ import { memo, useCallback, useMemo } from 'react';
 import {
   TextField as MuiTextField,
   Autocomplete as MuiAutocomplete,
-  InputLabel as MuiInputLabel,
 } from '@mui/material';
 import IconKeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import { useCleanParentProps } from './helper/clean-parent-props';
@@ -91,8 +90,16 @@ export const SelectAutocomplete = memo((props: SelectAutocompleteProps) => {
               label={props.label}
               placeholder={placeholder}
               {...errorMui}
-              slots={{
-                inputLabel: (ilProps: any) => <MuiInputLabel {...ilProps} shrink />,
+              slotProps={{
+                ...params.slotProps,
+                htmlInput: {
+                  ...params.slotProps.htmlInput,
+                  placeholder,
+                },
+                inputLabel: {
+                  ...params.slotProps.inputLabel,
+                  shrink: true,
+                },
               }}
             />
             {props.info && <Info id={`${field.name}Info`} info={props.info} />}

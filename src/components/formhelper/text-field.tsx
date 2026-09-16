@@ -34,7 +34,10 @@ export const TextField = memo((props: TextFieldProps) => {
     props.onChange?.(e as any);
   }, [field, props.onChange]);
 
-  const inputProps = useMemo(() => ({
+  const parentProps = useCleanParentProps(props, 'textField');
+  const placeholder = parentProps.placeholder ?? props.placeholder;
+
+  const htmlInputProps = useMemo(() => ({
     readOnly: props.readOnly,
     maxLength: props.maxLength,
     minLength: props.minLength,
@@ -42,9 +45,8 @@ export const TextField = memo((props: TextFieldProps) => {
     spellCheck: props.spellCheck,
     inputMode: props.inputMode,
     autoComplete: props.autoComplete,
-  }), [props.readOnly, props.maxLength, props.minLength, props.pattern, props.spellCheck, props.inputMode, props.autoComplete]);
-
-  const parentProps = useCleanParentProps(props, 'textField');
+    ...(placeholder ? { placeholder } : {}),
+  }), [props.readOnly, props.maxLength, props.minLength, props.pattern, props.spellCheck, props.inputMode, props.autoComplete, placeholder]);
 
   return (
     <ColPadded {...pickColLayoutProps(props)}>
@@ -52,7 +54,7 @@ export const TextField = memo((props: TextFieldProps) => {
         fullWidth
         {...identityProps}
         label={props.label}
-        {...(props.placeholder && { placeholder: props.placeholder })}
+        placeholder={placeholder}
         inputRef={field.ref}
         onBlur={onBlur}
         onChange={onChange}
@@ -60,7 +62,13 @@ export const TextField = memo((props: TextFieldProps) => {
         {...parentProps}
         {...valueProp}
         {...errorMui}
-        slotProps={{ htmlInput: inputProps }}
+        slotProps={{
+          ...parentProps.slotProps,
+          htmlInput: {
+            ...parentProps.slotProps?.htmlInput,
+            ...htmlInputProps,
+          },
+        }}
       />
       {props.info && <Info id={`${field.name}Info`} info={props.info} />}
     </ColPadded>

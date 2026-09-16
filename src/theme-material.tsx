@@ -193,6 +193,15 @@ export const baseThemeOptions: ThemeOptions = {
         root: {
           "& input[type='hidden']+fieldset": { display: 'none' },
         },
+        // Labels sit above the field (shrink: false). MUI otherwise hides
+        // placeholders until focus via opacity: 0 !important.
+        input: {
+          [`label[data-shrink=false] + .MuiInputBase-formControl &`]: {
+            '&::-webkit-input-placeholder': { opacity: '0.42 !important' },
+            '&::-moz-placeholder': { opacity: '0.42 !important' },
+            '&::-ms-input-placeholder': { opacity: '0.42 !important' },
+          },
+        },
       },
       variants: [
         { props: { variant: 'noborder' }, style: { border: `1px solid ${color.primary.white}` } } as any,

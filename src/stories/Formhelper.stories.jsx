@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { fn } from 'storybook/test';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Button } from '@mui/material';
@@ -303,10 +304,10 @@ const DemoForm = () => {
 
 // ─── Individual component stories (showing Input variants) ───────────────────
 
-const SimpleWrapper = ({ children, defaultValues = {} }) => {
+const SimpleWrapper = ({ children, defaultValues = {}, onSubmit }) => {
   const formMethods = useFormProvider({ defaultValues });
   return (
-    <FormProvider formMethods={formMethods} onSubmit={d => alert(JSON.stringify(d))}>
+    <FormProvider formMethods={formMethods} onSubmit={onSubmit ?? (d => alert(JSON.stringify(d)))}>
       <Row>
         {children}
         <Col size={12}>
@@ -316,6 +317,22 @@ const SimpleWrapper = ({ children, defaultValues = {} }) => {
     </FormProvider>
   );
 };
+
+const fieldArgTypes = {
+  label: { control: 'text' },
+  placeholder: { control: 'text' },
+  disabled: { control: 'boolean' },
+  name: { table: { disable: true } },
+  onChange: { action: 'onChange' },
+  onBlur: { action: 'onBlur' },
+  onSubmit: { action: 'onSubmit' },
+};
+
+const InteractiveField = ({ onSubmit, defaultValues = {}, ...inputArgs }) => (
+  <SimpleWrapper defaultValues={defaultValues} onSubmit={onSubmit}>
+    <Input {...inputArgs} />
+  </SimpleWrapper>
+);
 
 export const ReadOnlyStory = {
   name: 'ReadOnly',
@@ -344,11 +361,18 @@ export const ReadOnlyStory = {
 
 export const TextFieldStory = {
   name: 'TextField',
-  render: () => (
-    <SimpleWrapper>
-      <Input name="email" label="Email"/>
-    </SimpleWrapper>
-  ),
+  args: {
+    name: 'email',
+    label: 'Email',
+    placeholder: 'name@example.com',
+    disabled: false,
+    size: 6,
+    onChange: fn(),
+    onBlur: fn(),
+    onSubmit: fn(),
+  },
+  argTypes: fieldArgTypes,
+  render: (args) => <InteractiveField {...args} />,
 };
 
 const multiErrorSchema = yup.object({
@@ -449,11 +473,22 @@ export const SelectMultiStory = {
 
 export const SelectAutocompleteStory = {
   name: 'SelectAutocomplete',
-  render: () => (
-    <SimpleWrapper>
-      <Input name="roleAuto" label="Role" options={option.task.status}/>
-    </SimpleWrapper>
-  ),
+  args: {
+    name: 'roleAuto',
+    label: 'Role',
+    placeholder: 'Please Select',
+    options: option.task.status,
+    disabled: false,
+    size: 6,
+    onChange: fn(),
+    onBlur: fn(),
+    onSubmit: fn(),
+  },
+  argTypes: {
+    ...fieldArgTypes,
+    options: { control: 'object' },
+  },
+  render: (args) => <InteractiveField {...args} />,
 };
 
 export const SelectCheckboxStory = {

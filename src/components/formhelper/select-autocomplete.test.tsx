@@ -37,6 +37,22 @@ describe('Formhelper-SelectAutocomplete', () => {
     expect(input).toHaveAttribute('placeholder', 'Please Select');
   });
 
+  it('uses a custom placeholder on the input', () => {
+    render(
+      <TestHarness item={{}}>
+        <Input
+          name="status"
+          label="Status"
+          placeholder="Pick a status"
+          options={statusOptions}
+          data-testid="status-select"
+        />
+      </TestHarness>
+    );
+    const input = screen.getByTestId('status-select').querySelector('input')!;
+    expect(input).toHaveAttribute('placeholder', 'Pick a status');
+  });
+
   it('allows selecting a value', async () => {
     render(
       <TestHarness item={{}}>
