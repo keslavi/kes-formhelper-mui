@@ -15,7 +15,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
-const dest = join(root, '.dist-package-state');
+const dest = join(root, 'dist-formhelper-mui');
 const PASSWORD_ASSIGNMENT = /password\s+=/gi;
 const TEXT_EXTENSIONS = new Set([
   '.css',
@@ -45,10 +45,10 @@ function quoteArg(value) {
   return `"${value.replaceAll('"', '\\"')}"`;
 }
 
-function runNpm(args) {
+function runNpm(args, inheritOutput = false) {
   return execSync(['npm', ...args].map(quoteArg).join(' '), {
     cwd: root,
-    encoding: 'utf8',
+    ...(inheritOutput ? { stdio: 'inherit' } : { encoding: 'utf8' }),
   });
 }
 
@@ -56,7 +56,7 @@ function requirePublishArtifacts() {
   const missing = ['dist', 'storybook-static'].filter((name) => !existsSync(join(root, name)));
   if (missing.length) {
     console.error(
-      `${missing.join(' and ')} not found; run "npm run build" first (same as prepublishOnly)`,
+      `Build did not produce ${missing.join(' and ')}; check the build output and try again`,
     );
     process.exit(1);
   }
@@ -139,6 +139,7 @@ function sanitizeStorybookStatic() {
   return changedFiles;
 }
 
+runNpm(['run', 'build'], true);
 requirePublishArtifacts();
 
 const { packDir, tarball } = packToTemp();
