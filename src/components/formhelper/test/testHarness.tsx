@@ -10,6 +10,7 @@ export interface TestHarnessProps {
   children: ReactNode;
   noRow?: boolean;
   noResults?: boolean;
+  readOnly?: boolean;
   onSubmit?: (values: Record<string, any>) => void;
 }
 
@@ -19,6 +20,7 @@ export const TestHarness = ({
   children,
   noRow = false,
   noResults = false,
+  readOnly,
   onSubmit: onSubmitProp,
 }: TestHarnessProps) => {
   const resolver = schema ? yupResolver(schema) : undefined;
@@ -44,7 +46,7 @@ export const TestHarness = ({
   };
 
   return (
-    <FormProvider formMethods={formMethods} onSubmit={onSubmit}>
+    <FormProvider formMethods={formMethods} onSubmit={onSubmit} readOnly={readOnly}>
       {!noRow ? <Row>{children}</Row> : children}
       {!noResults && (
         <>

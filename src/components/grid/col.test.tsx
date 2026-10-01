@@ -40,6 +40,11 @@ describe('Col - xs backward compatibility', () => {
     expect(capturedSizeProps).toContainEqual({ xs: 'auto' });
   });
 
+  it('passes a responsive size map through to Grid', () => {
+    render(<Col size={{ xs: 12, md: 6 }}>content</Col>);
+    expect(capturedSizeProps).toContainEqual({ xs: 12, md: 6 });
+  });
+
   it('size prop takes precedence over xs', () => {
     render(<Col xs={6} size={4}>content</Col>);
     expect(capturedSizeProps).toContainEqual(4);

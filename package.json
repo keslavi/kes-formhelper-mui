@@ -57,6 +57,7 @@
     "storybook-build": "storybook build",
     "storybook-deploy": "npm run storybook-build && node ./scripts/storybook-deploy.js",
     "prepublishOnly": "npm run build",
+    "stage-package-dist": "node ./scripts/stage-package-dist.mjs",
     "test": "node scripts/kill-dev-ports.mjs 5300 && vitest --ui --watch --project=unit --api.port 5300",
     "test-once": "node scripts/kill-dev-ports.mjs 5300 && vitest run --project=unit"
   },
@@ -116,5 +117,8 @@
   "dependencies": {
     "dayjs": "^1.11.19",
     "lodash": "^4.17.23"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true
   }
 }

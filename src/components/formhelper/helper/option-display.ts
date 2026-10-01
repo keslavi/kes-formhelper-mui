@@ -1,10 +1,7 @@
-export interface OptionDisplayItem {
-  key: string | number;
-  text: string;
-}
+import type { Option } from '../option';
 
 export const getOptionLabelByKey = (
-  options: OptionDisplayItem[] | undefined,
+  options: Option[] | undefined,
   value: unknown
 ): string => {
   if (value === undefined || value === null || value === '') return '';
@@ -14,7 +11,7 @@ export const getOptionLabelByKey = (
 };
 
 export const getOptionLabelsByKeys = (
-  options: OptionDisplayItem[] | undefined,
+  options: Option[] | undefined,
   values: unknown
 ): string[] => {
   if (!Array.isArray(values)) return [];

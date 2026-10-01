@@ -78,6 +78,8 @@ const WHITELIST_KEYS: Record<CleanParentPropsTarget, readonly string[]> = {
     ...SHARED_KEYS.disabled,
     ...SHARED_KEYS.readOnly,
     'placeholder',
+    'maxLength',
+    'minLength',
     'maxRows',
     'autoComplete',
     'spellCheck',
@@ -121,7 +123,6 @@ const WHITELISTS = Object.fromEntries(
 
 const MUI_CONTROL_TARGETS = new Set<CleanParentPropsTarget>([
   'textField',
-  'select',
   'checkbox',
   'autocomplete',
 ]);
@@ -133,7 +134,7 @@ const PLACEHOLDER_TARGETS = new Set<CleanParentPropsTarget>([
 ]);
 
 const isMuiControlSize = (value: unknown): boolean =>
-  value === 'small' || value === 'medium' || value === 'large';
+  value === 'small' || value === 'medium';
 
 const isPassthroughAttr = (key: string): boolean =>
   key.startsWith('data-') || key.startsWith('aria-');
@@ -164,9 +165,11 @@ const pickWhitelisted = (
       continue;
     }
 
-    if (key === 'size') {
-      if (MUI_CONTROL_TARGETS.has(target) && isMuiControlSize(props.size)) {
-        ret.size = props.size;
+    if (key === 'size') continue;
+
+    if (key === 'sizeInput') {
+      if (MUI_CONTROL_TARGETS.has(target) && isMuiControlSize(props.sizeInput)) {
+        ret.size = props.sizeInput;
       }
       continue;
     }
@@ -187,7 +190,7 @@ export const cleanParentProps = (
 ): Record<string, any> => {
   const ret = pickWhitelisted(props, target);
 
-  if (PLACEHOLDER_TARGETS.has(target) && props.label && !props.placeholder) {
+  if (PLACEHOLDER_TARGETS.has(target) && props.label && props.placeholder === undefined) {
     ret.placeholder = props.label;
   }
 
@@ -209,7 +212,7 @@ const buildCleanParentPropsDeps = (
   }
 
   if (MUI_CONTROL_TARGETS.has(target)) {
-    deps.push(props.size);
+    deps.push(props.sizeInput);
   }
 
   for (const key of Object.keys(props)) {

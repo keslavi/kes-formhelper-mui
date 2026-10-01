@@ -9,5 +9,5 @@ export {
   isGridColPropKey,
   GRID_COL_STRIP_KEYS,
 } from './clean-grid-props';
-export type { CleanGridPropsTarget, ColSizeProps } from './clean-grid-props';
+export type { CleanGridPropsTarget, ColSizeProps, GridColSize } from './clean-grid-props';
 export { getOptionLabelByKey, getOptionLabelsByKeys } from './option-display';

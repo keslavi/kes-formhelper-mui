@@ -10,17 +10,15 @@ import { pickColLayoutProps } from './helper/clean-grid-props';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { Info } from './info';
 import { ColPadded } from '../grid';
+import type { FormControlProps, TextEntryProps } from './control-props';
 
-export type TextareaProps = UseFormFieldProps & {
-  label?: string;
+export type TextareaProps = UseFormFieldProps & FormControlProps & TextEntryProps & {
   charCount?: number;
   minRows?: number;
-  info?: any;
-  size?: number | string;
 };
 
 export const Textarea = memo((props: TextareaProps) => {
-  const { field, errorMui, valueProp, identityProps } = useFormField(props);
+  const { field, readOnly, errorMui, valueProp, identityProps } = useFormField(props);
 
   const onBlur = useCallback((e: React.FocusEvent<HTMLTextAreaElement>) => {
     field.onBlur(e.target.value);
@@ -62,6 +60,7 @@ export const Textarea = memo((props: TextareaProps) => {
   const hasError = errorMui?.error || hasCountError;
   const labelStyle = hasError ? { color: color.primary.red } : {};
   const parentProps = useCleanParentProps(props, 'textarea');
+  const placeholder = props.placeholder ?? parentProps.placeholder;
 
   return (
     <ColPadded {...pickColLayoutProps(props)}>
@@ -84,11 +83,13 @@ export const Textarea = memo((props: TextareaProps) => {
           width: '100%',
           border: hasError
             ? `1px solid ${color.primary.red}`
-            : `1px solid ${(color as any).cobe1?.grey ?? '#ccc'}`,
+            : readOnly
+              ? '0px solid transparent'
+              : `1px solid ${(color as any).cobe1?.grey ?? '#ccc'}`,
           borderRadius: 4,
           padding: 8,
           outline: 'none',
-          resize: 'vertical',
+          resize: readOnly ? 'none' : 'vertical',
           fontFamily: 'inherit',
           fontSize: 14,
           lineHeight: 1.5,
@@ -101,6 +102,11 @@ export const Textarea = memo((props: TextareaProps) => {
         onChange={onChange}
         {...parentProps}
         {...valueProp}
+        placeholder={placeholder}
+        readOnly={readOnly}
+        disabled={props.disabled}
+        maxLength={props.maxLength}
+        minLength={props.minLength}
       />
       {props.info && <Info id={`${field.name}Info`} info={props.info} />}
       {props.charCount && (

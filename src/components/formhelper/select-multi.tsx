@@ -7,23 +7,18 @@ import { getOptionLabelsByKeys } from './helper/option-display';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { Info } from './info';
 import { ColPadded } from '../grid';
+import type { FormControlProps, TextEntryProps } from './control-props';
+import type { Option, Options } from './option';
 
-export interface SelectMultiOption {
-  key: string | number;
-  text: string;
-}
+export type SelectMultiOption = Option;
 
-export type SelectMultiProps = UseFormFieldProps & {
-  label?: string;
-  placeholder?: string;
-  optionsMulti: SelectMultiOption[];
-  info?: any;
-  size?: number | string;
+export type SelectMultiProps = UseFormFieldProps & FormControlProps & TextEntryProps & {
+  optionsMulti: Options;
 };
 
 export const SelectMulti = memo((props: SelectMultiProps) => {
-  const { field, errorMui, identityProps } = useFormField(props);
-  const isReadOnly = !!props.readOnly;
+  const { field, readOnly, errorMui, identityProps } = useFormField(props);
+  const isReadOnly = readOnly;
   const [inputValue, setInputValue] = useState('');
 
   const placeholder = props.placeholder !== undefined ? props.placeholder : 'Please Select';
@@ -46,10 +41,11 @@ export const SelectMulti = memo((props: SelectMultiProps) => {
   }, [field, props.onBlur]);
 
   const onChange = useCallback((_e: any, newValue: SelectMultiOption[]) => {
+    if (props.disabled || readOnly) return;
     const selected = Array.isArray(newValue) ? newValue.map(i => i.key) : [];
     field.onChange(selected);
     props.onChange?.(selected as any);
-  }, [field, props.onChange]);
+  }, [field, props.disabled, props.onChange, readOnly]);
 
   const shouldShowPlaceholder = selectedOptions.length === 0 && inputValue === '';
 
@@ -74,7 +70,13 @@ export const SelectMulti = memo((props: SelectMultiProps) => {
           onBlur={onBlur}
           {...errorMui}
           {...textFieldParentProps}
-          slotProps={{ htmlInput: { readOnly: true } }}
+          slotProps={{
+            htmlInput: {
+              readOnly: true,
+              maxLength: props.maxLength,
+              minLength: props.minLength,
+            },
+          }}
         />
         {props.info && <Info id={`${field.name}Info`} info={props.info} />}
       </ColPadded>
@@ -91,22 +93,39 @@ export const SelectMulti = memo((props: SelectMultiProps) => {
         onInputChange={(_e, v) => setInputValue(v)}
         inputValue={inputValue}
         options={filteredOptions}
+        getOptionDisabled={option => !!option.disabled}
         getOptionLabel={o => o?.text ?? ''}
         isOptionEqualToValue={(o, v) => o?.key === v?.key}
         popupIcon={<KeyboardArrowDownIcon />}
         value={selectedOptions}
         {...autocompleteParentProps}
-        renderInput={params => (
-          <TextField
-            {...params}
-            inputRef={field.ref}
-            label={props.label}
-            placeholder={shouldShowPlaceholder ? placeholder : ''}
-            variant="outlined"
-            fullWidth
-            {...errorMui}
-          />
-        )}
+        renderInput={params => {
+          const inputPlaceholder = shouldShowPlaceholder ? placeholder : '';
+          return (
+            <TextField
+              {...params}
+              inputRef={field.ref}
+              label={props.label}
+              placeholder={inputPlaceholder}
+              variant="outlined"
+              fullWidth
+              {...errorMui}
+              slotProps={{
+                ...params.slotProps,
+                htmlInput: {
+                  ...params.slotProps?.htmlInput,
+                  placeholder: inputPlaceholder,
+                  maxLength: props.maxLength,
+                  minLength: props.minLength,
+                },
+                inputLabel: {
+                  ...params.slotProps?.inputLabel,
+                  ...(shouldShowPlaceholder ? { shrink: true } : {}),
+                },
+              }}
+            />
+          );
+        }}
       />
       {props.info && <Info id={`${field.name}Info`} info={props.info} />}
     </ColPadded>

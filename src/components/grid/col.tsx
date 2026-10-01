@@ -1,21 +1,19 @@
 import { Grid } from '@mui/material';
 import type { GridProps } from '@mui/material';
 import { memo, useMemo } from 'react';
-import { cleanGridProps, type ColSizeProps } from '../formhelper/helper/clean-grid-props';
+import { cleanGridProps, type ColSizeProps, type GridColSize } from '../formhelper/helper/clean-grid-props';
 import { Item, ItemNoPadding } from './item';
 
 const DEFAULT_SIZE = 3;
 
-type ResponsiveSize = number | 'auto' | { xs?: number | 'auto'; sm?: number | 'auto'; md?: number | 'auto'; lg?: number | 'auto'; xl?: number | 'auto' };
-
 interface ColBaseProps extends Omit<GridProps, 'size' | 'offset' | 'flex'>, ColSizeProps {}
 
-function useResponsiveSize(props: ColSizeProps): ResponsiveSize {
+function useResponsiveSize(props: ColSizeProps): GridColSize {
   const { size, xs, sm, md, lg, xl, flex } = props;
   return useMemo(() => {
     const hasBreakpoints = xs !== undefined || sm !== undefined || md !== undefined || lg !== undefined || xl !== undefined;
 
-    if (size !== undefined) return size as ResponsiveSize;
+    if (size !== undefined) return size;
     if (flex !== undefined && !hasBreakpoints) return 'auto';
 
     if (hasBreakpoints) {
@@ -25,7 +23,7 @@ function useResponsiveSize(props: ColSizeProps): ResponsiveSize {
         ...(md !== undefined && { md }),
         ...(lg !== undefined && { lg }),
         ...(xl !== undefined && { xl }),
-      } as ResponsiveSize;
+      } as GridColSize;
     }
     return DEFAULT_SIZE;
   }, [size, xs, sm, md, lg, xl, flex]);

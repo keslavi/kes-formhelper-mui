@@ -19,6 +19,13 @@ describe('cleanGridProps', () => {
       expect(pickColSizing({ xs: 'auto' })).toEqual({ xs: 'auto' });
     });
 
+    it('accepts MUI Grid size values, including responsive maps', () => {
+      expect(pickColSizing({ size: 'grow' })).toEqual({ size: 'grow' });
+      expect(pickColSizing({ size: false })).toEqual({ size: false });
+      expect(pickColSizing({ size: { xs: 12, md: 6 } })).toEqual({ size: { xs: 12, md: 6 } });
+      expect(pickColSizing({ size: [12, 6] })).toEqual({ size: [12, 6] });
+    });
+
     it('ignores invalid breakpoint values', () => {
       expect(pickColSizing({ xs: 'not-a-number', sm: 4 })).toEqual({ sm: 4 });
     });

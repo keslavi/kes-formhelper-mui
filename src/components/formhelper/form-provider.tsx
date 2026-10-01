@@ -21,6 +21,7 @@ import {
   buildFieldErrorState,
   type FieldErrorProp,
 } from './helper/field-errors';
+import type { FormControlProps } from './control-props';
 
 // ---------------------------------------------------------------------------
 // Context
@@ -28,6 +29,7 @@ import {
 
 interface FormContextValue {
   control: any;
+  readOnly?: boolean;
   errors: Record<string, any>;
   reset: (...args: any[]) => any;
   register: (...args: any[]) => any;
@@ -98,6 +100,7 @@ export const useFormProvider = <T extends FieldValues = FieldValues>(
 export interface FormProviderProps {
   children: ReactNode;
   onSubmit: (data: any) => void;
+  readOnly?: boolean;
   formProps?: React.FormHTMLAttributes<HTMLFormElement>;
   formOptions?: UseFormProps<any>;
   formMethods?: UseFormReturn<any>;
@@ -109,6 +112,7 @@ export const FormProvider = ({
   formProps = {},
   formOptions = {},
   formMethods: externalFormMethods,
+  readOnly,
 }: FormProviderProps) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const frmMethods = externalFormMethods ?? useForm<any>(withResolverCriteriaMode({
@@ -123,6 +127,7 @@ export const FormProvider = ({
   const value = useMemo<FormContextValue>(
     () => ({
       control,
+      readOnly,
       errors,
       reset,
       register,
@@ -132,7 +137,7 @@ export const FormProvider = ({
       getValues,
       formMethods: frmMethods,
     }),
-    [control, errors, reset, register, handleSubmit, watch, setValue, getValues, frmMethods]
+    [control, readOnly, errors, reset, register, handleSubmit, watch, setValue, getValues, frmMethods]
   );
 
   return (
@@ -178,7 +183,7 @@ export const useFormContext = (): FormContextValue => {
 // useFormField — common hook for all input controls
 // ---------------------------------------------------------------------------
 
-export interface UseFormFieldProps {
+export interface UseFormFieldProps extends Partial<FormControlProps> {
   name: string;
   'data-testid'?: string;
   control?: any;
@@ -198,6 +203,7 @@ export interface FormFieldIdentityProps {
 
 export interface UseFormFieldReturn {
   field: any;
+  readOnly: boolean;
   error: any;
   errorMessages: string[];
   errorMui: { error?: boolean; helperText?: ReactNode };
@@ -208,6 +214,7 @@ export interface UseFormFieldReturn {
 export const useFormField = (props: UseFormFieldProps): UseFormFieldReturn => {
   const ctx = useContext(FormContext);
   const control = props.control ?? ctx?.control;
+  const readOnly = props.readOnly ?? ctx?.readOnly ?? false;
 
   if (!control) {
     console.warn('useFormField: no FormProvider or control prop found for field', props.name);
@@ -248,5 +255,5 @@ export const useFormField = (props: UseFormFieldProps): UseFormFieldReturn => {
     'data-testid': props['data-testid'] ?? props.name,
   };
 
-  return { field, error, errorMessages, errorMui, valueProp, identityProps };
+  return { field, readOnly, error, errorMessages, errorMui, valueProp, identityProps };
 };

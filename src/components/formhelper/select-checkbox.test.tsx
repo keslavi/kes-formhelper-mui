@@ -64,6 +64,25 @@ describe('SelectCheckbox', () => {
     expect(input).toHaveAttribute('placeholder', '');
   });
 
+  it('does not allow selecting a disabled option', async () => {
+    render(
+      <TestHarness item={{}}>
+        <Input
+          name="categories"
+          label="Categories"
+          optionsCheckbox={[{ key: 1, text: 'unavailable', disabled: true }, { key: 2, text: 'available' }]}
+          data-testid="categories-select"
+        />
+      </TestHarness>
+    );
+    const input = screen.getByTestId('categories-select').querySelector('input')!;
+    await user.click(input);
+    const unavailable = await screen.findByRole('option', { name: /unavailable/i });
+    expect(unavailable).toHaveAttribute('aria-disabled', 'true');
+    expect(unavailable).toHaveStyle({ pointerEvents: 'none' });
+    expect(screen.queryByRole('button', { name: /unavailable/i })).not.toBeInTheDocument();
+  });
+
   it('calls onChange and onBlur', async () => {
     const onChange = vi.fn();
     const onBlur = vi.fn();
@@ -86,6 +105,38 @@ describe('SelectCheckbox', () => {
     expect(onChange).toHaveBeenCalled();
     await user.tab();
     expect(onBlur).toHaveBeenCalled();
+  });
+
+  it('shows a custom placeholder on the text input', () => {
+    render(
+      <TestHarness item={{}}>
+        <Input
+          name="categories"
+          label="Categories"
+          optionsCheckbox={categoryOptions}
+          placeholder="Pick categories"
+          data-testid="categories-select"
+        />
+      </TestHarness>
+    );
+    const input = screen.getByTestId('categories-select').querySelector('input');
+    expect(input).toHaveAttribute('placeholder', 'Pick categories');
+  });
+
+  it('applies maxLength on the text input', () => {
+    render(
+      <TestHarness item={{}}>
+        <Input
+          name="categories"
+          label="Categories"
+          optionsCheckbox={categoryOptions}
+          maxLength={4}
+          data-testid="categories-select"
+        />
+      </TestHarness>
+    );
+    const input = screen.getByTestId('categories-select').querySelector('input');
+    expect(input).toHaveAttribute('maxLength', '4');
   });
 
   it('renders info and error together', () => {

@@ -77,6 +77,39 @@ describe('Formhelper-TextArea', () => {
     });
   });
 
+  it('applies placeholder, maxLength, and readOnly on the textarea', () => {
+    render(
+      <TestHarness item={{}}>
+        <Input
+          name="description"
+          label="Description"
+          textarea
+          placeholder="Write something"
+          maxLength={12}
+          readOnly
+          data-testid="description-textarea"
+        />
+      </TestHarness>
+    );
+    const textarea = screen.getByRole('textbox', { name: /description/i });
+    expect(textarea).toHaveAttribute('placeholder', 'Write something');
+    expect(textarea).toHaveAttribute('maxLength', '12');
+    expect(textarea).toHaveAttribute('readOnly');
+  });
+
+  it('removes the custom border when readOnly is inherited from FormProvider', () => {
+    render(
+      <TestHarness item={{ body: 'Read-only body' }} readOnly>
+        <Input name="body" label="Body" textarea data-testid="body-textarea" />
+      </TestHarness>
+    );
+
+    const textarea = screen.getByRole('textbox', { name: /body/i });
+    expect(textarea).toHaveAttribute('readOnly');
+    expect(textarea.style.borderWidth).toBe('0px');
+    expect(textarea.style.resize).toBe('none');
+  });
+
   it('renders textarea without charCount', () => {
     render(
       <TestHarness item={{ notes: 'some notes' }}>

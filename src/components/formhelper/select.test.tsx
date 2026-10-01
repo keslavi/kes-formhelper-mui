@@ -97,6 +97,24 @@ describe('Formhelper-Select', () => {
     await waitFor(() => expect(select).toHaveTextContent('completed'));
   });
 
+  it('disables individual options', async () => {
+    render(
+      <TestHarness item={{}}>
+        <Input
+          name="status"
+          label="Status"
+          select
+          options={[{ key: 1, text: 'unavailable', disabled: true }, { key: 2, text: 'available' }]}
+        />
+      </TestHarness>
+    );
+    const select = screen.getByRole('combobox', { name: /status/i });
+    await user.click(select);
+    const unavailable = await screen.findByRole('option', { name: 'unavailable' });
+    expect(unavailable).toHaveAttribute('aria-disabled', 'true');
+    expect(select).toHaveTextContent('Please Select');
+  });
+
   it('handles empty options array', () => {
     render(
       <TestHarness item={{}}>

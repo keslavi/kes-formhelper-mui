@@ -71,6 +71,25 @@ describe('Formhelper-SelectAutocomplete', () => {
     expect(input).toHaveValue('completed');
   });
 
+  it('does not allow selecting a disabled option', async () => {
+    render(
+      <TestHarness item={{}}>
+        <Input
+          name="status"
+          label="Status"
+          options={[{ key: 1, text: 'unavailable', disabled: true }, { key: 2, text: 'available' }]}
+          data-testid="status-select"
+        />
+      </TestHarness>
+    );
+    const input = screen.getByTestId('status-select').querySelector('input')!;
+    await user.click(input);
+    const unavailable = await screen.findByRole('option', { name: 'unavailable' });
+    expect(unavailable).toHaveAttribute('aria-disabled', 'true');
+    expect(unavailable).toHaveStyle({ pointerEvents: 'none' });
+    expect(input).toHaveValue('');
+  });
+
   it('allows clearing a value', async () => {
     render(
       <TestHarness item={{ status: '3' }}>

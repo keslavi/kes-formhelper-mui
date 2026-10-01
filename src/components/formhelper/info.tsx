@@ -6,7 +6,6 @@ import {
 } from '@mui/material';
 import IconHelpRounded from '@mui/icons-material/HelpRounded';
 import IconClear from '@mui/icons-material/Clear';
-import IconHelp from '@mui/icons-material/Help';
 import { color } from '../../theme-material';
 
 // ---------------------------------------------------------------------------
@@ -63,12 +62,17 @@ export const Info = ({ id, info }: InfoProps) => {
   }
 
   return (
-    <div style={{ position: 'absolute', right: 10, top: 5, zIndex: 1 }}>
-      <IconHelpRounded
-        data-testid="IconHelpRounded"
-        sx={{ color: color.primary.blue, cursor: 'pointer', fontSize: '1.2rem' }}
-        onClick={e => setAnchor(e.currentTarget as unknown as HTMLElement)}
-      />
+    <div style={{ position: 'absolute', right: 10, top: 5, zIndex: 2000 }}>
+      <IconButton
+        size="small"
+        aria-label="help"
+        onClick={e => setAnchor(e.currentTarget)}
+      >
+        <IconHelpRounded
+          data-testid="IconHelpRounded"
+          sx={{ color: color.primary.blue, fontSize: '1.2rem' }}
+        />
+      </IconButton>
       <Popover
         id={id}
         open={open}
@@ -114,19 +118,20 @@ export const InfoIcon = ({ id, info, label }: InfoIconProps) => {
 
   return (
     <>
-      <IconHelp
-        color="primary"
-        fontSize="small"
-        onClick={e => setAnchor(open ? null : e.currentTarget as unknown as HTMLElement)}
+      <IconButton
+        size="small"
+        aria-label="help"
+        onClick={e => setAnchor(open ? null : e.currentTarget)}
         sx={{
-          color: color.cobe1?.blue ?? color.primary.blue,
           position: 'absolute',
           top: '-3px',
           right: 0,
           transform: 'translate(-10%,50%)',
-          cursor: 'pointer',
+          zIndex: 2000,
         }}
-      />
+      >
+        <IconHelpRounded sx={{ color: color.primary.blue, fontSize: '1.2rem' }} />
+      </IconButton>
       {label}
       <Popover
         id={id}

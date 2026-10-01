@@ -1,89 +1,118 @@
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react'
 import {
   Checkbox as MuiCheckbox,
   FormControlLabel as MuiFormControlLabel,
-  Typography,
   FormHelperText,
-} from '@mui/material';
-import { color } from '../../theme-material';
-import { useFormField, UseFormFieldProps } from './form-provider';
-import { useCleanParentProps } from './helper/clean-parent-props';
-import { pickColLayoutProps } from './helper/clean-grid-props';
-import { ColPadded } from '../grid';
-import { isTruthy } from '../../utils/is-truthy';
+} from '@mui/material'
+import { color } from '../../theme-material'
+import { useFormField, UseFormFieldProps } from './form-provider'
+import { useCleanParentProps } from './helper/clean-parent-props'
+import { pickColLayoutProps } from './helper/clean-grid-props'
+import { Info } from './info'
+import { ColPadded } from '../grid'
+import { isTruthy } from '../../utils/is-truthy'
+import type { FormControlProps } from './control-props'
 
-export type CheckboxProps = UseFormFieldProps & {
-  label?: string;
-  variant?: 'h1' | 'h2' | 'h3' | string;
-  isChecked?: any;
-  size?: number | string;
-};
+export type CheckboxProps = UseFormFieldProps &
+  FormControlProps & {
+    variant?: 'h1' | 'h2' | 'h3' | string
+    isChecked?: any
+  }
 
 export const Checkbox = memo((props: CheckboxProps) => {
-  const variant = props.variant ?? '';
-  const { field, error, errorMui, identityProps } = useFormField(props);
+  const variant = props.variant ?? ''
+  const { field, readOnly, error, errorMui, identityProps } = useFormField(props)
 
-  const isChecked = useCallback(() => isTruthy(field.value ?? props.isChecked), [field.value, props.isChecked]);
+  const isChecked = useCallback(
+    () => isTruthy(field.value ?? props.isChecked),
+    [field.value, props.isChecked]
+  )
 
-  const label = useMemo(() => {
-    const labelText = props.label ?? '';
+  const labelStyle = useMemo(() => {
     switch (variant) {
       case 'h1':
-        return (
-          <Typography style={{ fontSize: '1.2rem', fontWeight: 500, color: color.primary.blue }}>
-            {labelText}
-          </Typography>
-        );
+        return {
+          fontSize: '1.2rem',
+          fontWeight: 500,
+          color: color.primary.blue
+        }
       case 'h2':
-        return (
-          <Typography style={{ fontWeight: 400, color: color.primary.blue }}>
-            {labelText}
-          </Typography>
-        );
+        return { fontWeight: 400, color: color.primary.blue }
       case 'h3':
-        return (
-          <Typography style={{ fontSize: '.8rem', fontWeight: 300, color: color.primary.blue }}>
-            {labelText}
-          </Typography>
-        );
+        return { fontSize: '.8rem', fontWeight: 300, color: color.primary.blue }
       default:
-        return labelText;
+        return {}
     }
-  }, [props.label, variant]);
+  }, [variant])
 
-  const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    field.onChange(e.target.checked);
-    props.onChange?.(e as any);
-  }, [field, props.onChange]);
+  const onChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (readOnly) {
+        e.preventDefault()
+        return
+      }
+      field.onChange(e.target.checked)
+      props.onChange?.(e as any)
+    },
+    [field, props.onChange, readOnly]
+  )
 
-  const onBlur = useCallback((e: React.FocusEvent<HTMLButtonElement>) => {
-    field.onBlur(e.target);
-    props.onBlur?.(e as any);
-  }, [field, props.onBlur]);
+  const onBlur = useCallback(
+    (e: React.FocusEvent<HTMLButtonElement>) => {
+      field.onBlur(e.target)
+      props.onBlur?.(e as any)
+    },
+    [field, props.onBlur]
+  )
 
-  const parentProps = useCleanParentProps(props, 'checkbox');
+  const parentProps = useCleanParentProps(props, 'checkbox')
 
   return (
     <ColPadded {...pickColLayoutProps(props)}>
       <MuiFormControlLabel
+        disableTypography
         control={
           <MuiCheckbox
             {...identityProps}
             onChange={onChange}
             onBlurCapture={onBlur}
             checked={isChecked()}
-            color="success"
+            color='success'
             {...parentProps}
+            slotProps={{
+              ...parentProps.slotProps,
+              input: {
+                ...parentProps.slotProps?.input,
+                readOnly
+              }
+            }}
           />
         }
-        label={<>&nbsp;{label}</>}
+        // label={<>&nbsp;{label}</>}
+        // style={{ marginLeft: 0 }}
+        label={
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              lineHeight: '1.2',
+              paddingLeft: 10,
+              ...labelStyle
+            }}
+          >
+            {props.label ?? ''}
+          </span>
+        }
         style={{ marginLeft: 0 }}
       />
       {error && (
-        <FormHelperText className="Mui-error">{errorMui.helperText}</FormHelperText>
+        <FormHelperText className='Mui-error'>
+          {errorMui.helperText}
+        </FormHelperText>
       )}
+      {props.info && <Info id={`${field.name}Info`} info={props.info} />}
     </ColPadded>
-  );
-});
+  )
+})
 
-Checkbox.displayName = 'Checkbox';
+Checkbox.displayName = 'Checkbox'

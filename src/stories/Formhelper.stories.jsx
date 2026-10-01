@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { fn } from 'storybook/test';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Button } from '@mui/material';
@@ -10,15 +9,63 @@ import {
   FormProvider,
   useFormProvider,
   Input,
+  Info,
+  InfoIcon,
+  Label,
   Row,
   TextareaDebug,
   maskPattern,
 } from '@formhelper';
 
+const hiddenControl = { table: { disable: true } };
+
 export default {
   title: 'Formhelper',
   component: Input,
   tags: ['autodocs'],
+  parameters: {
+    controls: { expanded: true },
+  },
+  argTypes: {
+    name: hiddenControl,
+    arrayInput: hiddenControl,
+    select: hiddenControl,
+    checkbox: hiddenControl,
+    password: hiddenControl,
+    textarea: hiddenControl,
+    datepicker: hiddenControl,
+    datemask: hiddenControl,
+    mask: hiddenControl,
+    charCount: hiddenControl,
+    pattern: hiddenControl,
+    format: hiddenControl,
+    showLast: hiddenControl,
+    persistent: hiddenControl,
+    options: hiddenControl,
+    optionsMulti: hiddenControl,
+    optionsRadio: hiddenControl,
+    optionsCheckbox: hiddenControl,
+    control: hiddenControl,
+    unbound: hiddenControl,
+    defaultValue: hiddenControl,
+    value: hiddenControl,
+    error: hiddenControl,
+    helperText: hiddenControl,
+    autoFocus: hiddenControl,
+    variant: hiddenControl,
+    row: hiddenControl,
+    minRows: hiddenControl,
+    isChecked: hiddenControl,
+    min: hiddenControl,
+    max: hiddenControl,
+    onChange: hiddenControl,
+    onBlur: hiddenControl,
+    onSubmit: hiddenControl,
+    required: hiddenControl,
+    type: hiddenControl,
+    spellCheck: hiddenControl,
+    inputMode: hiddenControl,
+  },
 };
 
 // ─── shared options & initial data (modeled after legacy Task / option.task) ─
@@ -50,6 +97,7 @@ const initialValues = {
   body: 'Call customer to confirm requirements and next steps.',
   userAssigned: 'DOMAIN\\user.name',
   names: ['steve'],
+  ssn: '123456789',
   status: 'new',
   result: 'unknown',
   dfrom: '2024-01-15',
@@ -74,7 +122,7 @@ const schema = yup.object({
 
 // ─── Full Demo Form ───────────────────────────────────────────────────────────
 
-const DemoForm = () => {
+const DemoForm = ({ readOnly = false }) => {
   const [data, setData] = useState(null);
   const formMethods = useFormProvider({
     resolver: yupResolver(schema),
@@ -94,7 +142,7 @@ const DemoForm = () => {
         </Col>
       </Row>
 
-      <FormProvider formMethods={formMethods} onSubmit={onSubmit}>
+      <FormProvider formMethods={formMethods} onSubmit={onSubmit} readOnly={readOnly}>
         <Row>
           <div className="hidden"><Input name="id" label="Id" /></div>
           <Input name="userAssigned" label="Assigned To" disabled info="Auto-populated from Windows authentication" size={6} />
@@ -119,6 +167,13 @@ const DemoForm = () => {
             name="result"
             label="Result"
             options={option.task.result}
+          />
+
+          <Input
+            name="ssn"
+            label="Social Security Number"
+            mask={maskPattern.ssn}
+            placeholder="123-45-6789"
           />
 
           <Input
@@ -153,7 +208,16 @@ const DemoForm = () => {
 };
 
 export const FullForm = {
-  render: () => <DemoForm />,
+  args: {
+    readOnly: false,
+  },
+  argTypes: {
+    readOnly: {
+      control: 'boolean',
+      description: '`<FormProvider readOnly />` toggles the entire `<form>`.',
+    },
+  },
+  render: ({ readOnly }) => <DemoForm readOnly={readOnly} />,
   parameters: {
     docs: {
       source: {
@@ -170,6 +234,7 @@ import {
   Input,
   Row,
   TextareaDebug,
+  maskPattern,
 } from '../components';
 
 /** Option structure like store.use.option(): { task: { status: [], result: [], names: [] } } */
@@ -199,6 +264,7 @@ const initialValues = {
   body: 'Call customer to confirm requirements and next steps.',
   userAssigned: 'DOMAIN\\\\user.name',
   names: ['steve'],
+  ssn: '123456789',
   status: 'new',
   result: 'unknown',
   dfrom: '2024-01-15',
@@ -267,6 +333,13 @@ const DemoForm = () => {
           />
 
           <Input
+            name="ssn"
+            label="Social Security Number"
+            mask={maskPattern.ssn}
+            placeholder="123-45-6789"
+          />
+
+          <Input
             name="dfrom"
             label="From"
             datepicker
@@ -318,60 +391,202 @@ const SimpleWrapper = ({ children, defaultValues = {}, onSubmit }) => {
   );
 };
 
-const fieldArgTypes = {
+const hideArg = hiddenControl;
+const shown = (argType) => ({ ...argType, table: { disable: false } });
+
+const commonArgTypes = {
   label: { control: 'text' },
-  placeholder: { control: 'text' },
+  info: { control: 'text' },
+  readOnly: { control: 'boolean' },
   disabled: { control: 'boolean' },
-  name: { table: { disable: true } },
-  onChange: { action: 'onChange' },
-  onBlur: { action: 'onBlur' },
-  onSubmit: { action: 'onSubmit' },
+  size: {
+    control: { type: 'number', min: 1, max: 12, step: 1 },
+    description: 'Grid column span (default 3). Responsive maps such as { xs: 12, md: 6 } are valid in code.',
+  },
+  sizeInput: {
+    control: 'select',
+    options: ['small', 'medium'],
+    description: 'Visual size of the input control; independent of the Grid column size.',
+  },
+  xs: shown({
+    control: { type: 'number', min: 1, max: 12, step: 1 },
+    description: 'Deprecated; use size instead (for example, size={{ xs: 6 }}).',
+  }),
+  name: hideArg,
 };
 
-const InteractiveField = ({ onSubmit, defaultValues = {}, ...inputArgs }) => (
+const textEntryArgTypes = {
+  ...commonArgTypes,
+  placeholder: { control: 'text' },
+  maxLength: { control: 'number' },
+  minLength: { control: 'number' },
+};
+
+const autocompleteArgTypes = {
+  freeSolo: shown({ control: 'boolean' }),
+  disableClearable: shown({ control: 'boolean' }),
+  clearOnBlur: shown({ control: 'boolean' }),
+  selectOnFocus: shown({ control: 'boolean' }),
+  handleHomeEndKeys: shown({ control: 'boolean' }),
+  filterSelectedOptions: shown({ control: 'boolean' }),
+  includeInputInList: shown({ control: 'boolean' }),
+  openOnFocus: shown({ control: 'boolean' }),
+  autoHighlight: shown({ control: 'boolean' }),
+  loading: shown({ control: 'boolean' }),
+  loadingText: shown({ control: 'text' }),
+  noOptionsText: shown({ control: 'text' }),
+  forcePopupIcon: shown({ control: 'boolean' }),
+  disablePortal: shown({ control: 'boolean' }),
+  limitTags: shown({ control: 'number' }),
+};
+
+const commonArgs = {
+  info: '',
+  readOnly: false,
+  disabled: false,
+  xs: 6,
+};
+
+const textEntryArgs = {
+  ...commonArgs,
+  placeholder: '',
+};
+
+export const LabelStory = {
+  name: 'Label',
+  component: Label,
+  args: {
+    text: 'Example label',
+    value: '',
+  },
+  argTypes: {
+    text: { control: 'text' },
+    value: { control: 'text' },
+    children: hideArg,
+  },
+  render: (args) => <Label {...args} />,
+};
+
+export const InfoStory = {
+  name: 'Info',
+  component: Info,
+  args: {
+    id: 'example-info',
+    info: 'Object',
+  },
+  argTypes: {
+    id: hideArg,
+    info: {
+      control: 'select',
+      options: ['JSX', 'Object', 'Header|body'],
+      description: 'Click icon to view info.<br/>uses: <br/><ul><li>"Title|Message"</li><li>JSX</li><li>or <br/>InfoObject ({ label, message, content, messageList })</li></ul>',
+      mapping: {
+        JSX: <><strong>JSX header</strong><p>This is <em>rich JSX</em> passed directly to Info.</p></>,
+        Object: {
+          label: 'Help',
+          message: 'Structured info supports a header, message, JSX content, and a list.',
+          content: <><strong>JSX content</strong> can be included in the object.</>,
+          messageList: ['First detail', 'Second detail'],
+        },
+        'Header|body': 'Header example|Body example',
+      },
+    },
+  },
+  render: (args) => <div style={{ position: 'relative', minHeight: 48 }}><Info {...args} /></div>,
+};
+
+export const InfoIconStory = {
+  name: 'InfoIcon',
+  component: InfoIcon,
+  args: {
+    id: 'example-info-icon',
+    info: 'Help|Additional information about this field.',
+    label: 'Field label',
+  },
+  argTypes: {
+    id: { control: 'text' },
+    info: { control: 'text' },
+    label: { control: 'text' },
+  },
+  render: (args) => <div style={{ position: 'relative', minHeight: 48 }}><InfoIcon {...args} /></div>,
+};
+
+const InteractiveField = ({
+  onSubmit,
+  defaultValues = {},
+  maxLength,
+  minLength,
+  ...inputArgs
+}) => (
   <SimpleWrapper defaultValues={defaultValues} onSubmit={onSubmit}>
-    <Input {...inputArgs} />
+    <Input
+      {...inputArgs}
+      {...(maxLength === '' || maxLength == null ? {} : { maxLength: Number(maxLength) })}
+      {...(minLength === '' || minLength == null ? {} : { minLength: Number(minLength) })}
+    />
   </SimpleWrapper>
 );
 
-export const ReadOnlyStory = {
-  name: 'ReadOnly',
-  render: () => (
-    <SimpleWrapper
-      defaultValues={{
-        emailReadOnly: 'readonly@example.com',
-        roleReadOnly: 'inProgress',
-        roleAutoReadOnly: 'done',
-        tagsReadOnly: ['steve', 'riley'],
-        tagsCbReadOnly: ['cindy', 'riley'],
-        dateReadOnly: '2024-10-21',
-        dobReadOnly: '1990-05-15',
-      }}
-    >
-      <Input name="emailReadOnly" label="Email (ReadOnly)" readOnly/>
-      <Input name="roleReadOnly" label="Role Select (ReadOnly)" select readOnly options={option.task.status}/>
-      <Input name="roleAutoReadOnly" label="Role Auto (ReadOnly)" readOnly options={option.task.status}/>
-      <Input name="tagsReadOnly" label="Tags Multi (ReadOnly)" readOnly optionsMulti={option.task.names}/>
-      <Input name="tagsCbReadOnly" label="Tags Checkbox (ReadOnly)" readOnly optionsCheckbox={option.task.names}/>
-      <Input name="dateReadOnly" label="Pick a Date (ReadOnly)" readOnly datepicker/>
-      <Input name="dobReadOnly" label="Date of Birth Mask (ReadOnly)" readOnly datemask/>
-    </SimpleWrapper>
-  ),
+const InputTypesDemo = () => (
+  <SimpleWrapper
+    defaultValues={{
+      demoText: 'TextField',
+      demoPassword: 'secret123',
+      demoCount: 'Hello',
+      demoAgree: true,
+      demoRadio: 'new',
+      demoSelect: 'new',
+      demoAutocomplete: 'done',
+      demoMulti: ['steve'],
+      demoCheckboxSelect: ['cindy'],
+      demoTextarea: 'Textarea content',
+      demoDate: '2026-09-29',
+      demoDateMask: '1990-05-15',
+      demoTextMask: '123456789',
+      demoArray: ['First item'],
+    }}
+  >
+    <Input name="demoText" label="Input (TextField)" size={6} />
+    <Input name="demoPassword" label="Input (Password)" password size={6} />
+    <Input name="demoCount" label="Input (CharCount)" charCount={10} size={6} />
+    <Input name="demoAgree" label="Input (Checkbox)" checkbox size={6} />
+    <Input name="demoRadio" label="Input (Radio)" optionsRadio={option.task.status} size={6} />
+    <Input name="demoSelect" label="Input (Select)" select options={option.task.status} size={6} />
+    <Input name="demoAutocomplete" label="Input (SelectAutocomplete)" options={option.task.status} size={6} />
+    <Input name="demoMulti" label="Input (SelectMulti)" optionsMulti={option.task.names} size={6} />
+    <Input name="demoCheckboxSelect" label="Input (SelectCheckbox)" optionsCheckbox={option.task.names} size={6} />
+    <Input name="demoTextarea" label="Input (Textarea)" textarea minRows={2} size={6} />
+    <Input name="demoDate" label="Input (Datepicker)" datepicker size={6} />
+    <Input name="demoDateMask" label="Input (DateMask)" datemask size={6} />
+    <Input name="demoTextMask" label="Input (TextMask)" mask={maskPattern.ssn} size={6} />
+    <Input name="demoArray" label="Input (ArrayInput)" arrayInput size={6} />
+  </SimpleWrapper>
+);
+
+export const InputTypesStory = {
+  name: 'Input/Usage',
+  parameters: {
+    docs: {
+      description: {
+        story: 'Input selects its control from props: omit a type flag for TextField; use `password`, `charCount`, `checkbox`, `optionsRadio`, `select` + `options`, `options` alone, `optionsMulti`, `optionsCheckbox`, `textarea`, `datepicker`, `datemask`, `mask`, or `arrayInput` to choose the corresponding control.',
+      },
+    },
+  },
+  render: () => <InputTypesDemo />,
 };
 
 export const TextFieldStory = {
-  name: 'TextField',
+  name: 'Input (TextField)',
   args: {
+    ...textEntryArgs,
     name: 'email',
     label: 'Email',
-    placeholder: 'name@example.com',
-    disabled: false,
-    size: 6,
-    onChange: fn(),
-    onBlur: fn(),
-    onSubmit: fn(),
+    placeholder: '',
   },
-  argTypes: fieldArgTypes,
+  argTypes: {
+    ...textEntryArgTypes,
+    autoComplete: shown({ control: 'text' }),
+  },
   render: (args) => <InteractiveField {...args} />,
 };
 
@@ -412,133 +627,243 @@ const MultipleValidationErrorsDemo = () => {
 };
 
 export const MultipleValidationErrorsStory = {
-  name: 'TextField — Multiple Validation Errors',
+  name: 'Input (TextField) — Multiple Validation Errors',
   render: () => <MultipleValidationErrorsDemo />,
 };
 
 export const PasswordStory = {
-  name: 'Password',
-  render: () => (
-    <SimpleWrapper>
-      <Input name="pwd" label="Password" password/>
-    </SimpleWrapper>
-  ),
+  name: 'Input (Password)',
+  args: {
+    ...textEntryArgs,
+    name: 'pwd',
+    label: 'Password',
+    placeholder: '',
+    password: true,
+  },
+  argTypes: {
+    ...textEntryArgTypes,
+    autoComplete: shown({ control: 'text' }),
+    password: hideArg,
+  },
+  render: (args) => <InteractiveField {...args} />,
 };
 
 export const CharCountStory = {
-  name: 'CharCount',
-  render: () => (
-    <SimpleWrapper>
-      <Input name="msg" label="Message (5 chars)" charCount={5} />
-    </SimpleWrapper>
-  ),
+  name: 'Input (CharCount)',
+  args: {
+    ...textEntryArgs,
+    name: 'msg',
+    label: 'Message',
+    placeholder: '',
+    charCount: 5,
+  },
+  argTypes: {
+    ...textEntryArgTypes,
+    charCount: shown({ control: { type: 'number', min: 1 } }),
+    autoComplete: shown({ control: 'text' }),
+  },
+  render: (args) => <InteractiveField {...args} />,
 };
 
 export const CheckboxStory = {
-  name: 'Checkbox',
-  render: () => (
-    <SimpleWrapper>
-      <Input name="agree" label="I agree" checkbox/>
-      <Input name="notify" label="Notify me (h1)" checkbox variant="h1"/>
-    </SimpleWrapper>
-  ),
+  name: 'Input (Checkbox)',
+  args: {
+    ...commonArgs,
+    name: 'agree',
+    label: 'I agree',
+    checkbox: true,
+    variant: '',
+  },
+  argTypes: {
+    ...commonArgTypes,
+    checkbox: hideArg,
+    isChecked: shown({ control: 'boolean' }),
+  },
+  render: (args) => <InteractiveField {...args} />,
 };
 
 export const RadioStory = {
-  name: 'Radio',
-  render: () => (
-    <SimpleWrapper>
-      <Input name="choice" label="Your choice" optionsRadio={option.task.status} row size={12} />
-    </SimpleWrapper>
-  ),
+  name: 'Input (Radio)',
+  args: {
+    ...commonArgs,
+    name: 'choice',
+    label: 'Your choice',
+    size: 12,
+    row: true,
+    optionsRadio: option.task.status,
+    disabledKeys: ['inProgress'],
+  },
+  argTypes: {
+    ...commonArgTypes,
+    row: shown({ control: 'boolean' }),
+    optionsRadio: shown({ control: 'object' }),
+    disabledKeys: shown({ control: 'object' }),
+  },
+  render: (args) => <InteractiveField {...args} />,
 };
 
 export const SelectStory = {
-  name: 'Select',
-  render: () => (
-    <SimpleWrapper>
-      <Input name="role" label="Role" select options={option.task.status}/>
-    </SimpleWrapper>
-  ),
+  name: 'Input (Select)',
+  args: {
+    ...commonArgs,
+    name: 'role',
+    label: 'Role',
+    placeholder: '',
+    select: true,
+    options: option.task.status,
+  },
+  argTypes: {
+    ...commonArgTypes,
+    placeholder: { control: 'text' },
+    autoWidth: shown({ control: 'boolean' }),
+    select: hideArg,
+    options: shown({ control: 'object' }),
+  },
+  render: (args) => <InteractiveField {...args} />,
 };
 
 export const SelectMultiStory = {
-  name: 'SelectMulti',
-  render: () => (
-    <SimpleWrapper defaultValues={{ tags: [] }}>
-      <Input name="tags" label="Tags" optionsMulti={option.task.names} size={6} />
-    </SimpleWrapper>
-  ),
+  name: 'Input (SelectMulti)',
+  args: {
+    ...textEntryArgs,
+    name: 'tags',
+    label: 'Tags',
+    placeholder: '',
+    optionsMulti: option.task.names,
+  },
+  argTypes: {
+    ...textEntryArgTypes,
+    optionsMulti: shown({ control: 'object' }),
+    ...autocompleteArgTypes,
+  },
+  render: (args) => <InteractiveField {...args} defaultValues={{ tags: [] }} />,
 };
 
 export const SelectAutocompleteStory = {
-  name: 'SelectAutocomplete',
+  name: 'Input (SelectAutocomplete)',
   args: {
+    ...textEntryArgs,
     name: 'roleAuto',
     label: 'Role',
-    placeholder: 'Please Select',
+    placeholder: '',
     options: option.task.status,
-    disabled: false,
-    size: 6,
-    onChange: fn(),
-    onBlur: fn(),
-    onSubmit: fn(),
   },
   argTypes: {
-    ...fieldArgTypes,
-    options: { control: 'object' },
+    ...textEntryArgTypes,
+    options: shown({ control: 'object' }),
+    ...autocompleteArgTypes,
   },
   render: (args) => <InteractiveField {...args} />,
 };
 
 export const SelectCheckboxStory = {
-  name: 'SelectCheckbox',
-  render: () => (
-    <SimpleWrapper defaultValues={{ tags: [] }}>
-      <Input name="tagsCb" label="Tags" optionsCheckbox={option.task.names} size={6} />
-    </SimpleWrapper>
-  ),
+  name: 'Input (SelectCheckbox)',
+  args: {
+    ...textEntryArgs,
+    name: 'tagsCb',
+    label: 'Tags',
+    placeholder: '',
+    optionsCheckbox: option.task.names,
+  },
+  argTypes: {
+    ...textEntryArgTypes,
+    optionsCheckbox: shown({ control: 'object' }),
+    ...autocompleteArgTypes,
+  },
+  render: (args) => <InteractiveField {...args} defaultValues={{ tagsCb: [] }} />,
 };
 
 export const TextareaStory = {
-  name: 'Textarea',
-  render: () => (
-    <SimpleWrapper>
-      <Input name="bio" label="Bio" textarea minRows={3} charCount={200} size={12} />
-    </SimpleWrapper>
-  ),
+  name: 'Input (Textarea)',
+  args: {
+    ...textEntryArgs,
+    name: 'bio',
+    label: 'Bio',
+    placeholder: '',
+    size: 12,
+    textarea: true,
+    minRows: 3,
+    charCount: 200,
+  },
+  argTypes: {
+    ...textEntryArgTypes,
+    textarea: hideArg,
+    minRows: shown({ control: 'number' }),
+    charCount: shown({ control: 'number' }),
+  },
+  render: (args) => <InteractiveField {...args} />,
 };
 
 export const DatepickerStory = {
-  name: 'Datepicker',
-  render: () => (
-    <SimpleWrapper>
-      <Input name="date" label="Pick a Date" datepicker/>
-    </SimpleWrapper>
-  ),
+  name: 'Input (Datepicker)',
+  args: {
+    ...textEntryArgs,
+    name: 'date',
+    label: 'Pick a Date',
+    placeholder: '',
+    datepicker: true,
+  },
+  argTypes: {
+    ...textEntryArgTypes,
+    datepicker: hideArg,
+    min: shown({ control: 'text' }),
+    max: shown({ control: 'text' }),
+  },
+  render: (args) => <InteractiveField {...args} />,
 };
 
 export const DateMaskStory = {
-  name: 'DateMask',
-  render: () => (
-    <SimpleWrapper defaultValues={{ dob: '1990-05-15' }}>
-      <Input name="dob" label="Date of Birth" datemask/>
-    </SimpleWrapper>
-  ),
+  name: 'Input (DateMask)',
+  args: {
+    ...textEntryArgs,
+    name: 'dob',
+    label: 'Date of Birth',
+    placeholder: '',
+    datemask: true,
+  },
+  argTypes: {
+    ...textEntryArgTypes,
+    datemask: hideArg,
+    min: shown({ control: 'text' }),
+    max: shown({ control: 'text' }),
+  },
+  render: (args) => <InteractiveField {...args} defaultValues={{ dob: '1990-05-15' }} />,
+};
+
+export const TextMaskStory = {
+  name: 'Input (TextMask)',
+  args: {
+    ...textEntryArgs,
+    name: 'ssn',
+    label: 'SSN',
+    placeholder: '',
+    mask: maskPattern.ssn,
+  },
+  argTypes: {
+    ...textEntryArgTypes,
+    mask: shown({ control: 'text' }),
+    format: shown({ control: 'text' }),
+    showLast: shown({ control: 'number' }),
+    persistent: shown({ control: 'boolean' }),
+  },
+  render: (args) => <InteractiveField {...args} />,
 };
 
 export const ArrayInputStory = {
-  name: 'ArrayInput',
-  render: () => (
-    <SimpleWrapper defaultValues={{ aliases: [] }}>
-      <Input 
-        name="aliases" 
-        label="Aliases" 
-        arrayInput 
-        placeholder="Enter alias..." size={12} 
-      />
-    </SimpleWrapper>
-  ),
+  name: 'Input (ArrayInput)',
+  args: {
+    ...textEntryArgs,
+    name: 'aliases',
+    label: 'Aliases',
+    placeholder: '',
+    size: 12,
+    arrayInput: true,
+  },
+  argTypes: {
+    ...textEntryArgTypes,
+    arrayInput: hideArg,
+  },
+  render: (args) => <InteractiveField {...args} defaultValues={{ aliases: [] }} />,
 };
 
 export const PatternStory = {

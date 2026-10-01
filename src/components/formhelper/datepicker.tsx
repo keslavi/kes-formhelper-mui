@@ -5,14 +5,13 @@ import { isEmpty } from 'lodash';
 import { useCleanParentProps } from './helper/clean-parent-props';
 import { pickColLayoutProps } from './helper/clean-grid-props';
 import { useFormField, UseFormFieldProps } from './form-provider';
+import { Info } from './info';
 import { ColPadded } from '../grid';
+import type { FormControlProps, TextEntryProps } from './control-props';
 
-export type DatepickerProps = UseFormFieldProps & {
-  label?: string;
+export type DatepickerProps = UseFormFieldProps & FormControlProps & TextEntryProps & {
   min?: string;
   max?: string;
-  readOnly?: boolean;
-  size?: number | string;
 };
 
 const normalizeDateInput = (raw?: any): string | undefined => {
@@ -32,8 +31,8 @@ const normalizeDateInput = (raw?: any): string | undefined => {
 };
 
 export const Datepicker = memo((props: DatepickerProps) => {
-  const { field, errorMui, valueProp, identityProps } = useFormField(props);
-  const isReadOnly = !!props.readOnly;
+  const { field, readOnly, errorMui, valueProp, identityProps } = useFormField(props);
+  const isReadOnly = readOnly;
 
   const attributes = useMemo(() => {
     const inputProps: Record<string, string> = {};
@@ -94,6 +93,7 @@ export const Datepicker = memo((props: DatepickerProps) => {
             },
           }}
         />
+        {props.info && <Info id={`${field.name}Info`} info={props.info} />}
       </ColPadded>
     );
   }
@@ -118,6 +118,7 @@ export const Datepicker = memo((props: DatepickerProps) => {
           },
         }}
       />
+      {props.info && <Info id={`${field.name}Info`} info={props.info} />}
     </ColPadded>
   );
 });

@@ -52,6 +52,16 @@ describe('TextField', () => {
     expect(input).toHaveValue('');
   });
 
+  it('allows an empty placeholder to override the label default', () => {
+    render(
+      <TestHarness item={{}}>
+        <Input name="name" label="Name" placeholder="" data-testid="name-field" />
+      </TestHarness>
+    );
+    const input = screen.getByTestId('name-field').querySelector('input');
+    expect(input).toHaveAttribute('placeholder', '');
+  });
+
   it('allows user input and calls onChange', async () => {
     const mockOnChange = vi.fn();
     render(
@@ -63,6 +73,23 @@ describe('TextField', () => {
     await user.type(input, 'Jane Doe');
     expect(input).toHaveValue('Jane Doe');
     expect(mockOnChange).toHaveBeenCalled();
+  });
+
+  it('inherits readOnly from FormProvider and allows a field override', async () => {
+    render(
+      <TestHarness item={{ name: 'Locked', editable: 'Editable' }} readOnly>
+        <Input name="name" label="Read only" data-testid="provider-readonly" />
+        <Input name="editable" label="Override" readOnly={false} data-testid="field-override" />
+      </TestHarness>
+    );
+
+    const inheritedInput = screen.getByTestId('provider-readonly').querySelector('input')!;
+    const overrideInput = screen.getByTestId('field-override').querySelector('input')!;
+    expect(inheritedInput).toHaveAttribute('readonly');
+    expect(overrideInput).not.toHaveAttribute('readonly');
+
+    await user.type(overrideInput, ' value');
+    expect(overrideInput).toHaveValue('Editable value');
   });
 
   it('calls onBlur when input loses focus', async () => {

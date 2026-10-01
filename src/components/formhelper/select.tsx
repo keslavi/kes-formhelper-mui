@@ -12,27 +12,23 @@ import { getOptionLabelByKey } from './helper/option-display';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { Info } from './info';
 import { ColPadded } from '../grid';
+import type { FormControlProps } from './control-props';
+import type { Option, Options } from './option';
 
-export interface SelectOption {
-  key: string | number;
-  text: string;
-}
+export type SelectOption = Option;
 
-export type SelectProps = UseFormFieldProps & {
-  label?: string;
+export type SelectProps = UseFormFieldProps & FormControlProps & {
   placeholder?: string;
-  options?: SelectOption[];
-  info?: any;
-  size?: number | string;
+  options?: Options;
 };
 
 export const Select = React.memo((props: SelectProps) => {
-  const { field, errorMui, valueProp, identityProps } = useFormField(props);
-  const isReadOnly = !!props.readOnly;
+  const { field, readOnly, errorMui, valueProp, identityProps } = useFormField(props);
+  const isReadOnly = readOnly;
 
   const renderedOptions = useMemo(() =>
     props.options?.map(x => (
-      <MenuItem key={x.key} value={x.key}>{x.text}</MenuItem>
+      <MenuItem key={x.key} value={x.key} disabled={!!x.disabled}>{x.text}</MenuItem>
     )) ?? [],
     [props.options]
   );
@@ -43,9 +39,10 @@ export const Select = React.memo((props: SelectProps) => {
   }, [field, props.onBlur]);
 
   const onChange = useCallback((e: React.ChangeEvent<{ value: unknown }>) => {
+    if (props.disabled || readOnly) return;
     field.onChange((e.target as any).value);
     props.onChange?.(e as any);
-  }, [field, props.onChange]);
+  }, [field, props.disabled, props.onChange, readOnly]);
 
   const hasError = !!errorMui.error;
 
@@ -64,6 +61,7 @@ export const Select = React.memo((props: SelectProps) => {
           inputRef={field.ref}
           onBlur={onBlur}
           value={displayValue}
+          placeholder={props.placeholder}
           {...(hasError ? { error: true, helperText: errorMui.helperText } : {})}
           {...textFieldParentProps}
           slotProps={{ htmlInput: { readOnly: true } }}
@@ -75,7 +73,7 @@ export const Select = React.memo((props: SelectProps) => {
 
   return (
     <ColPadded {...pickColLayoutProps(props)}>
-      <FormControl fullWidth error={hasError}>
+      <FormControl fullWidth size={props.sizeInput} error={hasError} disabled={!!props.disabled}>
         <InputLabel id={`${field.name}-label`}>{props.label}</InputLabel>
         <MuiSelect
           labelId={`${field.name}-label`}

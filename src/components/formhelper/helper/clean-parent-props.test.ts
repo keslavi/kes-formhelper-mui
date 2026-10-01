@@ -36,4 +36,12 @@ describe('cleanParentProps', () => {
       cleanParentProps({ name: 'email', xs: 6, options: [], onClick }, 'textField'),
     ).toEqual({ onClick });
   });
+
+  it('keeps grid size separate from MUI control size', () => {
+    expect(cleanParentProps({ size: 6 }, 'textField')).toEqual({});
+    expect(cleanParentProps({ size: 'small' }, 'textField')).toEqual({});
+    expect(cleanParentProps({ size: 6, sizeInput: 'small' }, 'textField')).toEqual({
+      size: 'small',
+    });
+  });
 });

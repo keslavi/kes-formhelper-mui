@@ -13,6 +13,7 @@ import { TextField, TextFieldProps } from './text-field';
 import { TextMask, TextMaskProps } from './text-mask';
 import { Password, PasswordProps } from './password';
 import { CharCount, CharCountProps } from './char-count';
+import type { FormControlProps } from './control-props';
 
 /**
  * Multi-type input dispatcher — selects the right component based on props.
@@ -33,6 +34,7 @@ import { CharCount, CharCountProps } from './char-count';
  */
 
 export type InputProps =
+  & Partial<FormControlProps>
   & Partial<ArrayInputProps>
   & Partial<CheckboxProps>
   & Partial<DatepickerProps>

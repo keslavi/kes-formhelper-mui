@@ -56,6 +56,8 @@ export {
 } from './formhelper';
 
 export type {
+	Option,
+	Options,
 	ArrayInputProps,
 	CharCountProps,
 	CheckboxProps,

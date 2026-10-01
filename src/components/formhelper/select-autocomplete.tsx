@@ -10,24 +10,19 @@ import { getOptionLabelByKey } from './helper/option-display';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { Info } from './info';
 import { ColPadded } from '../grid';
+import type { FormControlProps, TextEntryProps } from './control-props';
+import type { Option, Options } from './option';
 
-export interface SelectAutocompleteOption {
-  key: string | number;
-  text: string;
-}
+export type SelectAutocompleteOption = Option;
 
-export type SelectAutocompleteProps = UseFormFieldProps & {
-  label?: string;
-  placeholder?: string;
-  options?: SelectAutocompleteOption[];
-  info?: any;
-  size?: number | string;
+export type SelectAutocompleteProps = UseFormFieldProps & FormControlProps & TextEntryProps & {
+  options?: Options;
 };
 
 export const SelectAutocomplete = memo((props: SelectAutocompleteProps) => {
   const options = useMemo(() => props.options ?? [], [props.options]);
-  const { field, errorMui, identityProps } = useFormField(props);
-  const isReadOnly = !!props.readOnly;
+  const { field, readOnly, errorMui, identityProps } = useFormField(props);
+  const isReadOnly = readOnly;
 
   const placeholder = props.placeholder !== undefined ? props.placeholder : 'Please Select';
 
@@ -44,9 +39,10 @@ export const SelectAutocomplete = memo((props: SelectAutocompleteProps) => {
   }, [field, props.onBlur]);
 
   const onChange = useCallback((_e: any, newValue: SelectAutocompleteOption | null) => {
+    if (props.disabled || readOnly) return;
     field.onChange(newValue ? newValue.key : null);
     props.onChange?.(_e, newValue as any);
-  }, [field, props.onChange]);
+  }, [field, props.disabled, props.onChange, readOnly]);
 
   const displayValue = useMemo(() => getOptionLabelByKey(options, field.value), [options, field.value]);
   const textFieldParentProps = useCleanParentProps(props, 'textField');
@@ -65,7 +61,13 @@ export const SelectAutocomplete = memo((props: SelectAutocompleteProps) => {
           placeholder={placeholder}
           {...errorMui}
           {...textFieldParentProps}
-          slotProps={{ htmlInput: { readOnly: true } }}
+          slotProps={{
+            htmlInput: {
+              readOnly: true,
+              maxLength: props.maxLength,
+              minLength: props.minLength,
+            },
+          }}
         />
         {props.info && <Info id={`${field.name}Info`} info={props.info} />}
       </ColPadded>
@@ -77,6 +79,7 @@ export const SelectAutocomplete = memo((props: SelectAutocompleteProps) => {
       <MuiAutocomplete
         {...identityProps}
         options={options}
+        getOptionDisabled={option => !!option.disabled}
         getOptionLabel={o => o?.text ?? ''}
         onChange={onChange}
         onBlur={onBlur}
@@ -95,6 +98,8 @@ export const SelectAutocomplete = memo((props: SelectAutocompleteProps) => {
                 htmlInput: {
                   ...params.slotProps.htmlInput,
                   placeholder,
+                  maxLength: props.maxLength,
+                  minLength: props.minLength,
                 },
                 inputLabel: {
                   ...params.slotProps.inputLabel,

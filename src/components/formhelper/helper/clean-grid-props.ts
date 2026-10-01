@@ -1,9 +1,16 @@
 import { useMemo } from 'react';
+import type { GridProps } from '@mui/material';
 
 export type CleanGridPropsTarget = 'col' | 'row' | 'rowHeader' | 'rowSubheader';
 
+/**
+ * MUI Grid `size` prop: a column span (`number`, `'auto'`, `'grow'`, `false`),
+ * a responsive map (`{ xs: 12, md: 6 }`), or a breakpoint array.
+ */
+export type GridColSize = NonNullable<GridProps['size']>;
+
 export interface ColSizeProps {
-  size?: number | string | Record<string, unknown>;
+  size?: GridColSize;
   xs?: number | string;
   sm?: number | string;
   md?: number | string;
@@ -70,13 +77,35 @@ const WHITELISTS = Object.fromEntries(
   Object.entries(WHITELIST_KEYS).map(([target, keys]) => [target, new Set(keys)]),
 ) as Record<CleanGridPropsTarget, Set<string>>;
 
-export const isGridSizeValue = (value: unknown): boolean => {
-  if (typeof value === 'number') return true;
+const GRID_BREAKPOINTS = new Set(['xs', 'sm', 'md', 'lg', 'xl']);
+
+const isGridSizeToken = (value: unknown): boolean => {
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (value === false) return true;
   if (typeof value === 'string') {
     const trimmed = value.trim();
-    return trimmed === 'auto' || (trimmed !== '' && !isNaN(Number(trimmed)));
+    if (trimmed === 'auto' || trimmed === 'grow') return true;
+    return trimmed !== '' && !Number.isNaN(Number(trimmed));
   }
-  return typeof value === 'object' && value !== null && 'size' in value && isGridSizeValue((value as { size: unknown }).size);
+  return false;
+};
+
+/** True when `value` is a valid MUI Grid `size` (including responsive maps). */
+export const isGridSizeValue = (value: unknown): boolean => {
+  if (isGridSizeToken(value)) return true;
+  if (Array.isArray(value)) {
+    return value.length > 0 && value.every((item) => item == null || isGridSizeToken(item));
+  }
+  if (typeof value === 'object' && value !== null) {
+    if ('size' in value && isGridSizeValue((value as { size: unknown }).size)) return true;
+    const record = value as Record<string, unknown>;
+    const keys = Object.keys(record);
+    if (keys.length === 0) return false;
+    return keys.every(
+      (key) => GRID_BREAKPOINTS.has(key) && (record[key] == null || isGridSizeToken(record[key])),
+    );
+  }
+  return false;
 };
 
 /**

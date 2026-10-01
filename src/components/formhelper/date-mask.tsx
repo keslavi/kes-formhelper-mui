@@ -7,18 +7,17 @@ import { isEmpty } from 'lodash';
 import { useCleanParentProps } from './helper/clean-parent-props';
 import { pickColLayoutProps } from './helper/clean-grid-props';
 import { useFormField, UseFormFieldProps } from './form-provider';
+import { Info } from './info';
 import { ColPadded } from '../grid';
+import type { FormControlProps, TextEntryProps } from './control-props';
 
-export type DateMaskProps = UseFormFieldProps & {
-  label?: string;
+export type DateMaskProps = UseFormFieldProps & FormControlProps & TextEntryProps & {
   min?: string;
   max?: string;
-  readOnly?: boolean;
-  size?: number | string;
 };
 
 export const DateMask = memo((props: DateMaskProps) => {
-  const { field, errorMui, valueProp, identityProps } = useFormField(props);
+  const { field, readOnly, errorMui, valueProp, identityProps } = useFormField(props);
 
   const hasValue = !!(valueProp && (valueProp as any).value && String((valueProp as any).value).trim() !== '');
   const [masked, setMasked] = useState(hasValue);
@@ -83,10 +82,13 @@ export const DateMask = memo((props: DateMaskProps) => {
     <InputAdornment position="end" sx={{ height: 'auto' }}>
       <IconButton
         aria-label="toggle date visibility"
-        onClick={() => setMasked(v => !v)}
+        onClick={() => {
+          if (!props.disabled) setMasked(v => !v);
+        }}
         onMouseDown={e => e.preventDefault()}
         edge="end"
         size="small"
+        disabled={props.disabled}
         sx={{
           p: '2px',
           minWidth: 'auto',
@@ -132,7 +134,7 @@ export const DateMask = memo((props: DateMaskProps) => {
       />
       {/* Date input — only when !readOnly (native calendar allowed here) */}
       <MuiTextField
-        className={!masked && !props.readOnly ? '' : 'hidden'}
+        className={!masked && !readOnly ? '' : 'hidden'}
         {...sharedFieldProps}
         {...fieldIdentity('', true)}
         inputRef={field.ref}
@@ -142,14 +144,15 @@ export const DateMask = memo((props: DateMaskProps) => {
       />
       {/* Read-only formatted — text only, no native date picker */}
       <MuiTextField
-        className={!masked && props.readOnly ? '' : 'hidden'}
+        className={!masked && readOnly ? '' : 'hidden'}
         {...sharedFieldProps}
         {...fieldIdentity('-readonly')}
-        inputRef={props.readOnly ? field.ref : undefined}
+        inputRef={readOnly ? field.ref : undefined}
         type="text"
         value={(valueProp as any)?.value ? dayjs((valueProp as any).value).format('MM/DD/YYYY') : ''}
         slotProps={slotReadOnlyFormatted}
       />
+      {props.info && <Info id={`${field.name}Info`} info={props.info} />}
     </ColPadded>
   );
 });

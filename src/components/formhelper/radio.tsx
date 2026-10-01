@@ -12,23 +12,19 @@ import { pickColLayoutProps } from './helper/clean-grid-props';
 import { Info } from './info';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { ColPadded } from '../grid';
+import type { FormControlProps } from './control-props';
+import type { Option } from './option';
 
-export interface RadioOption {
-  key: string | number;
-  text: string;
-}
+export type RadioOption = Option;
 
-export type RadioProps = UseFormFieldProps & {
-  label?: string;
+export type RadioProps = UseFormFieldProps & FormControlProps & {
   optionsRadio: RadioOption[];
+  disabledKeys?: string[];
   row?: boolean;
-  info?: any;
-  disabled?: boolean;
-  size?: number | string;
 };
 
 export const Radio = memo((props: RadioProps) => {
-  const { field, errorMui, valueProp, identityProps } = useFormField(props);
+  const { field, readOnly, errorMui, valueProp, identityProps } = useFormField(props);
 
   const onBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     field.onBlur(e.target.value);
@@ -36,9 +32,10 @@ export const Radio = memo((props: RadioProps) => {
   }, [field, props.onBlur]);
 
   const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (readOnly) return;
     field.onChange(e.target.value);
     props.onChange?.(e as any);
-  }, [field, props.onChange]);
+  }, [field, props.onChange, readOnly]);
 
   const parentProps = useCleanParentProps(props, 'radioGroup');
 
@@ -52,18 +49,26 @@ export const Radio = memo((props: RadioProps) => {
         <RadioGroup
           row={props.row}
           {...identityProps}
-          onBlur={onBlur}
-          onChange={onChange}
           {...valueProp}
           {...parentProps}
+          onBlur={onBlur}
+          onChange={onChange}
+          onClick={(e) => {
+            if (readOnly) e.preventDefault();
+          }}
         >
           {props.optionsRadio.map(x => (
             <FormControlLabel
               key={x.key}
               value={x.key}
-              control={<MuiRadio />}
+              control={<MuiRadio slotProps={{ input: { readOnly } }} />}
               label={x.text}
-              {...(props.disabled ? { disabled: true } : {})}
+              disabled={!!(
+                props.disabled
+                || (props.disabledKeys
+                  ? props.disabledKeys.includes(String(x.key))
+                  : x.disabled)
+              )}
             />
           ))}
         </RadioGroup>

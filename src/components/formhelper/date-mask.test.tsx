@@ -50,6 +50,18 @@ describe('DateMask', () => {
     expect(getVisibleVisibilityToggle()).toBeInTheDocument();
   });
 
+  it('forwards a custom placeholder to the date input', () => {
+    render(
+      <TestHarness item={{}}>
+        <Row>
+          <DateMask name="testDate" label="Test Date" placeholder="Choose date" />
+        </Row>
+      </TestHarness>
+    );
+
+    expect(getVisibleInput('Test Date', 'date')).toHaveAttribute('placeholder', 'Choose date');
+  });
+
   it('accepts a date value', async () => {
     const user = userEvent.setup();
     render(

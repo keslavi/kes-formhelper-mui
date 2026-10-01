@@ -6,17 +6,12 @@ import { killDevPorts } from './kill-dev-ports.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
-const binDir = join(root, 'node_modules', '.bin');
+const concurrentlyCli = join(root, 'node_modules', 'concurrently', 'dist', 'bin', 'concurrently.js');
 const killPortsScript = join(root, 'scripts', 'kill-dev-ports.mjs');
 
-function localBin(name) {
-  const file = process.platform === 'win32' ? `${name}.cmd` : name;
-  return join(binDir, file);
-}
 
 killDevPorts();
 
-const concurrentlyBin = localBin('concurrently');
 
 const services = [
   'npm run test',
@@ -27,8 +22,9 @@ const services = [
 ];
 
 const child = spawn(
-  concurrentlyBin,
+  process.execPath,
   [
+    concurrentlyCli,
     '--kill-timeout', '3000',
     '--teardown', `node ${killPortsScript}`,
     '--names', 'tests,fh,sb',

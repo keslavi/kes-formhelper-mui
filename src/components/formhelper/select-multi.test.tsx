@@ -58,6 +58,25 @@ describe('Formhelper-Multiselect', () => {
     });
   });
 
+  it('does not allow selecting a disabled option', async () => {
+    render(
+      <TestHarness item={{}}>
+        <Input
+          name="names2"
+          label="Names"
+          optionsMulti={[{ key: 1, text: 'unavailable', disabled: true }, { key: 2, text: 'available' }]}
+          data-testid="multiselect"
+        />
+      </TestHarness>
+    );
+    const input = screen.getByTestId('multiselect').querySelector('input')!;
+    await user.click(input);
+    const unavailable = await screen.findByRole('option', { name: 'unavailable' });
+    expect(unavailable).toHaveAttribute('aria-disabled', 'true');
+    expect(unavailable).toHaveStyle({ pointerEvents: 'none' });
+    expect(screen.queryByRole('button', { name: /unavailable/i })).not.toBeInTheDocument();
+  });
+
   it('allows multiple selections', async () => {
     render(
       <TestHarness item={{}}>

@@ -82,6 +82,7 @@ out
 .nuxt
 dist
 storybook-static
+.dist-package-state
 .output
 
 # Gatsby files

@@ -5,24 +5,18 @@ import { pickColLayoutProps } from './helper/clean-grid-props';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { Info } from './info';
 import { ColPadded } from '../grid';
+import type { FormControlProps, TextEntryProps } from './control-props';
 
-export type TextFieldProps = UseFormFieldProps & {
-  label?: string;
-  placeholder?: string;
-  info?: any;
+export type TextFieldProps = UseFormFieldProps & FormControlProps & TextEntryProps & {
   autoFocus?: boolean;
-  readOnly?: boolean;
-  maxLength?: number;
-  minLength?: number;
   pattern?: string;
   spellCheck?: boolean;
   inputMode?: string;
   autoComplete?: string;
-  size?: number | string;
 };
 
 export const TextField = memo((props: TextFieldProps) => {
-  const { field, errorMui, valueProp, identityProps } = useFormField(props);
+  const { field, readOnly, errorMui, valueProp, identityProps } = useFormField(props);
 
   const onBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     field.onBlur(e.target.value);
@@ -38,7 +32,7 @@ export const TextField = memo((props: TextFieldProps) => {
   const placeholder = parentProps.placeholder ?? props.placeholder;
 
   const htmlInputProps = useMemo(() => ({
-    readOnly: props.readOnly,
+    readOnly,
     maxLength: props.maxLength,
     minLength: props.minLength,
     pattern: props.pattern,
@@ -46,7 +40,7 @@ export const TextField = memo((props: TextFieldProps) => {
     inputMode: props.inputMode,
     autoComplete: props.autoComplete,
     ...(placeholder ? { placeholder } : {}),
-  }), [props.readOnly, props.maxLength, props.minLength, props.pattern, props.spellCheck, props.inputMode, props.autoComplete, placeholder]);
+  }), [readOnly, props.maxLength, props.minLength, props.pattern, props.spellCheck, props.inputMode, props.autoComplete, placeholder]);
 
   return (
     <ColPadded {...pickColLayoutProps(props)}>

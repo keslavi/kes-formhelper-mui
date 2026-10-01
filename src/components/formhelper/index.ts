@@ -18,6 +18,10 @@ export {
 	renderFieldErrorMessages,
 } from './helper/field-errors';
 
+export type { FormControlProps, TextEntryProps } from './control-props';
+export type { Option, Options } from './option';
+export type { GridColSize } from './helper/clean-grid-props';
+
 export { Label } from './label';
 export type { LabelProps } from './label';
 

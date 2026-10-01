@@ -8,14 +8,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import MuiTextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
+import { Info } from './info';
+import type { FormControlProps, TextEntryProps } from './control-props';
 
-export interface ArrayInputProps {
+export interface ArrayInputProps extends FormControlProps, TextEntryProps {
   name: string;
-  label?: string;
-  placeholder?: string;
-  info?: string;
-  size?: number | string;
-  disabled?: boolean;
 }
 
 export const ArrayInput = (props: ArrayInputProps) => {
@@ -26,9 +23,13 @@ export const ArrayInput = (props: ArrayInputProps) => {
     info,
     size = 12,
     disabled = false,
+    maxLength,
+    minLength,
   } = props;
 
-  const { formMethods } = useFormContext();
+  const { formMethods, readOnly: providerReadOnly } = useFormContext();
+  const readOnly = props.readOnly ?? providerReadOnly ?? false;
+  const locked = disabled || readOnly;
   const { control, formState: { errors } } = formMethods;
   const { fields, append, remove } = useFieldArray({ control, name });
 
@@ -38,20 +39,19 @@ export const ArrayInput = (props: ArrayInputProps) => {
     collectFieldErrorMessages((errors as any)?.[name]?.[index]);
 
   return (
-    <Col size={size as any}>
+    <Col size={size}>
       <Box sx={{ mb: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, pr: info ? 4 : 0 }}>
           {label && (
             <label style={{ marginRight: 8, fontWeight: 500 }}>{label}</label>
           )}
-          {info && <span title={info} style={{ marginLeft: 4, cursor: 'help', color: '#666' }}>ⓘ</span>}
           <Button
             type="button"
             variant="outlined"
             size="small"
             startIcon={<AddIcon />}
             onClick={() => append('')}
-            disabled={disabled}
+            disabled={locked}
             sx={{ ml: 'auto' }}
           >
             Add
@@ -70,16 +70,23 @@ export const ArrayInput = (props: ArrayInputProps) => {
               {...control.register(`${name}.${index}`)}
               placeholder={placeholder}
               fullWidth
-              size="small"
+              size={props.sizeInput}
               disabled={disabled}
               error={itemErrorMessages(index).length > 0}
               helperText={renderFieldErrorMessages(itemErrorMessages(index))}
+              slotProps={{
+                htmlInput: {
+                  readOnly,
+                  maxLength,
+                  minLength,
+                },
+              }}
             />
             <IconButton
               type="button"
               color="error"
               onClick={() => remove(index)}
-              disabled={disabled}
+              disabled={locked}
               size="small"
             >
               <DeleteIcon />
@@ -92,6 +99,7 @@ export const ArrayInput = (props: ArrayInputProps) => {
             {renderFieldErrorMessages(arrayErrorMessages)}
           </Box>
         )}
+        {info && <Info id={`${name}Info`} info={info} />}
       </Box>
     </Col>
   );

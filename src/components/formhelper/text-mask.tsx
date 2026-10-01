@@ -9,13 +9,13 @@ import { Info } from './info';
 import { ColPadded } from '../grid';
 import { DateMask } from './date-mask';
 import { maskPattern } from './mask-pattern';
+import type { FormControlProps, TextEntryProps } from './control-props';
 
 // ---------------------------------------------------------------------------
 // Types & mask patterns
 // ---------------------------------------------------------------------------
 
-export type TextMaskProps = UseFormFieldProps & {
-  label?: string;
+export type TextMaskProps = UseFormFieldProps & FormControlProps & TextEntryProps & {
   /** Mask key from maskPattern, a custom pattern string, or boolean (for date mask legacy shorthand) */
   mask?: string | boolean;
   /** Format key from maskPattern or a custom pattern string */
@@ -24,8 +24,6 @@ export type TextMaskProps = UseFormFieldProps & {
   showLast?: number;
   /** If true, value is always visible (no toggle) */
   persistent?: boolean;
-  info?: any;
-  size?: number | string;
 };
 
 
@@ -145,7 +143,7 @@ export const TextMask = memo((props: TextMaskProps) => {
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { field, errorMui, valueProp, identityProps } = useFormField(props);
+  const { field, readOnly, errorMui, valueProp, identityProps } = useFormField(props);
 
   const [showValue, setShowValue] = useState(
     !(valueProp && (valueProp as any).value && String((valueProp as any).value).trim() !== '')
@@ -216,6 +214,7 @@ export const TextMask = memo((props: TextMaskProps) => {
 
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (props.disabled || readOnly) return;
       let newValue = e.target.value;
 
       if (pattern) newValue = removeMask(newValue, pattern);
@@ -231,10 +230,11 @@ export const TextMask = memo((props: TextMaskProps) => {
         }, 30000);
       }
     },
-    [field, props, pattern, formatPattern, showValue]
+    [field, props, pattern, formatPattern, showValue, readOnly]
   );
 
   const onClickShowValue = useCallback(() => {
+    if (props.disabled) return;
     const next = !showValue;
     setShowValue(next);
 
@@ -247,7 +247,7 @@ export const TextMask = memo((props: TextMaskProps) => {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
-  }, [showValue]);
+  }, [props.disabled, showValue]);
 
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -285,18 +285,21 @@ export const TextMask = memo((props: TextMaskProps) => {
   );
 
   const parentProps = useCleanParentProps(props, 'textField');
+  const placeholder = props.placeholder ?? parentProps.placeholder;
+  const htmlInputProps = {
+    readOnly,
+    maxLength: props.maxLength,
+    minLength: props.minLength,
+    ...(placeholder ? { placeholder } : {}),
+  };
 
   return (
     <ColPadded {...pickColLayoutProps(props)}>
       <MuiTextField
         fullWidth
-        size="small"
-        sx={{
-          '& .MuiOutlinedInput-root': { minHeight: 34, overflow: 'visible' },
-          '& .MuiOutlinedInput-input': { padding: '6px 8px' },
-        }}
         {...identityProps}
         label={props.label}
+        placeholder={placeholder}
         inputRef={field.ref}
         onFocus={onFocus}
         onBlur={onBlur}
@@ -305,9 +308,10 @@ export const TextMask = memo((props: TextMaskProps) => {
         value={displayValue}
         {...parentProps}
         {...errorMui}
-        {...(!props.persistent
-          ? {
-              slotProps: {
+        slotProps={{
+          htmlInput: htmlInputProps,
+          ...(!props.persistent
+            ? {
                 input: {
                   endAdornment: (
                     <InputAdornment position="end" sx={{ height: 'auto' }}>
@@ -317,6 +321,7 @@ export const TextMask = memo((props: TextMaskProps) => {
                         onMouseDown={e => e.preventDefault()}
                         edge="end"
                         size="small"
+                        disabled={props.disabled}
                         sx={{
                           p: '2px',
                           minWidth: 'auto',
@@ -333,9 +338,9 @@ export const TextMask = memo((props: TextMaskProps) => {
                     </InputAdornment>
                   ),
                 },
-              },
-            }
-          : {})}
+              }
+            : {}),
+        }}
       />
       {props.info && <Info id={`${props.id ?? field.name}Info`} info={props.info} />}
     </ColPadded>

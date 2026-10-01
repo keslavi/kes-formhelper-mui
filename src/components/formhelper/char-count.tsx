@@ -6,6 +6,7 @@ import { pickColLayoutProps } from './helper/clean-grid-props';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { Info } from './info';
 import { ColPadded } from '../grid';
+import type { FormControlProps, TextEntryProps } from './control-props';
 
 const CharMessage = ({
   msg,
@@ -29,24 +30,17 @@ const CharMessage = ({
   </>
 );
 
-export type CharCountProps = UseFormFieldProps & {
-  label?: string;
+export type CharCountProps = UseFormFieldProps & FormControlProps & TextEntryProps & {
   charCount: number;
-  placeholder?: string;
-  info?: any;
   autoFocus?: boolean;
-  readOnly?: boolean;
-  maxLength?: number;
-  minLength?: number;
   pattern?: string;
   spellCheck?: boolean;
   inputMode?: string;
   autoComplete?: string;
-  size?: number | string;
 };
 
 export const CharCount = memo((props: CharCountProps) => {
-  const { field, errorMui, valueProp, identityProps } = useFormField(props);
+  const { field, readOnly, errorMui, valueProp, identityProps } = useFormField(props);
 
   const onBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     field.onBlur(e.target.value);
@@ -59,14 +53,14 @@ export const CharCount = memo((props: CharCountProps) => {
   }, [field, props.onChange]);
 
   const inputProps = useMemo(() => ({
-    readOnly: props.readOnly,
+    readOnly,
     maxLength: props.maxLength,
     minLength: props.minLength,
     pattern: props.pattern,
     spellCheck: props.spellCheck,
     inputMode: props.inputMode,
     autoComplete: props.autoComplete,
-  }), [props.readOnly, props.maxLength, props.minLength, props.pattern, props.spellCheck, props.inputMode, props.autoComplete]);
+  }), [readOnly, props.maxLength, props.minLength, props.pattern, props.spellCheck, props.inputMode, props.autoComplete]);
 
   const currentLength = (field.value as string)?.length ?? 0;
   const isWithinLimit = currentLength <= props.charCount;

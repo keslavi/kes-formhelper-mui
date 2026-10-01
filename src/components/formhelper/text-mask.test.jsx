@@ -34,6 +34,23 @@ describe('TextMask Component', () => {
     expect(input).toBeInTheDocument();
   });
 
+  test('uses sizeInput for MUI density instead of the grid size', () => {
+    render(
+      <TestWrapper>
+        <TextMask
+          name="ssn"
+          label="SSN"
+          mask="ssn"
+          size={6}
+          sizeInput="small"
+        />
+      </TestWrapper>
+    );
+
+    const input = screen.getByLabelText('SSN');
+    expect(input.closest('.MuiInputBase-root')).toHaveClass('MuiInputBase-sizeSmall');
+  });
+
   test('starts unmasked when no initial value is provided', async () => {
     render(
       <TestWrapper>

@@ -13,26 +13,23 @@ import { getOptionLabelsByKeys } from './helper/option-display';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { Info } from './info';
 import { ColPadded } from '../grid';
+import type { FormControlProps, TextEntryProps } from './control-props';
+import type { Option, Options } from './option';
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
-export interface SelectCheckboxOption {
-  key: string | number;
-  text: string;
-}
+export type SelectCheckboxOption = Option;
 
-export type SelectCheckboxProps = UseFormFieldProps & {
-  label?: string;
-  optionsCheckbox: SelectCheckboxOption[];
-  info?: any;
-  size?: number | string;
+export type SelectCheckboxProps = UseFormFieldProps & FormControlProps & TextEntryProps & {
+  optionsCheckbox: Options;
 };
 
 export const SelectCheckbox = memo((props: SelectCheckboxProps) => {
   const { optionsCheckbox: options, label, info, ...restProps } = props;
-  const { field, errorMui, identityProps } = useFormField(props);
-  const isReadOnly = !!props.readOnly;
+  const { field, readOnly, errorMui, identityProps } = useFormField(props);
+  const isReadOnly = readOnly;
+  const placeholder = props.placeholder !== undefined ? props.placeholder : 'Please Select';
 
   const onBlur = useCallback((e: React.FocusEvent) => {
     field.onBlur((e.target as any).value);
@@ -40,10 +37,11 @@ export const SelectCheckbox = memo((props: SelectCheckboxProps) => {
   }, [field, props.onBlur]);
 
   const onChange = useCallback((_e: any, newValue: SelectCheckboxOption[]) => {
+    if (props.disabled || readOnly) return;
     const selected = Array.isArray(newValue) ? newValue.map(i => i.key) : [];
     field.onChange(selected);
     props.onChange?.(selected as any);
-  }, [field, props.onChange]);
+  }, [field, props.disabled, props.onChange, readOnly]);
 
   const selectedOptions = useMemo(() => {
     if (!Array.isArray(field.value) || !Array.isArray(options)) return [];
@@ -67,11 +65,17 @@ export const SelectCheckbox = memo((props: SelectCheckboxProps) => {
           variant="outlined"
           fullWidth
           value={displayValue}
-          placeholder="Please Select"
+          placeholder={placeholder}
           onBlur={onBlur}
           {...errorMui}
           {...textFieldParentProps}
-          slotProps={{ htmlInput: { readOnly: true } }}
+          slotProps={{
+            htmlInput: {
+              readOnly: true,
+              maxLength: props.maxLength,
+              minLength: props.minLength,
+            },
+          }}
         />
         {info && <Info id={`${field.name}Info`} info={info} />}
       </ColPadded>
@@ -86,6 +90,7 @@ export const SelectCheckbox = memo((props: SelectCheckboxProps) => {
         onBlur={onBlur}
         onChange={onChange}
         options={Array.isArray(options) ? options : []}
+        getOptionDisabled={option => !!option.disabled}
         disableCloseOnSelect
         popupIcon={<KeyboardArrowDownIcon />}
         getOptionLabel={o => o?.text ?? ''}
@@ -101,21 +106,38 @@ export const SelectCheckbox = memo((props: SelectCheckboxProps) => {
                 checkedIcon={checkedIcon}
                 style={{ marginRight: 8 }}
                 checked={selected}
+                disabled={!!option.disabled}
               />
               {option.text}
             </li>
           );
         }}
-        renderInput={params => (
-          <TextField
-            {...params}
-            inputRef={field.ref}
-            label={label}
-            variant="outlined"
-            placeholder={selectedOptions.length === 0 ? 'Please Select' : ''}
-            {...errorMui}
-          />
-        )}
+        renderInput={params => {
+          const inputPlaceholder = selectedOptions.length === 0 ? placeholder : '';
+          return (
+            <TextField
+              {...params}
+              inputRef={field.ref}
+              label={label}
+              variant="outlined"
+              placeholder={inputPlaceholder}
+              {...errorMui}
+              slotProps={{
+                ...params.slotProps,
+                htmlInput: {
+                  ...params.slotProps?.htmlInput,
+                  placeholder: inputPlaceholder,
+                  maxLength: props.maxLength,
+                  minLength: props.minLength,
+                },
+                inputLabel: {
+                  ...params.slotProps?.inputLabel,
+                  ...(selectedOptions.length === 0 ? { shrink: true } : {}),
+                },
+              }}
+            />
+          );
+        }}
       />
       {info && <Info id={`${field.name}Info`} info={info} />}
     </ColPadded>
