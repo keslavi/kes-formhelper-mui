@@ -1,11 +1,11 @@
-# kes-formhelper-mui
+# kes-react-formhelper
 
 Form helper components for MUI built on react-hook-form.
 
 ## Install
 
 ```bash
-npm install kes-formhelper-mui
+npm install kes-react-formhelper
 ```
 
 ## Peer dependencies
@@ -19,6 +19,13 @@ This package expects these to be installed by the consuming app:
 
 Validation resolvers (yup, zod, etc.) and `@hookform/resolvers` are optional and supplied by the host app.
 
+## Tests
+
+Run `npm run test-once` for the unit tests. GitHub Actions runs the same command
+on pushes and pull requests. The `main` and `dev` branches require the
+`Unit tests` check; repository administrators can bypass this protection.
+After `npm install`, Husky also runs the unit tests before each local commit.
+
 ## Usage
 
 ```tsx
@@ -28,7 +35,7 @@ import {
 	Select,
 	ThemeProvider,
 	theme,
-} from 'kes-formhelper-mui';
+} from 'kes-react-formhelper';
 
 export function ExampleForm() {
 	return (

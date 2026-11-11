@@ -2,6 +2,7 @@ import { useFieldArray } from 'react-hook-form';
 import { useFormContext } from './form-provider';
 import { collectFieldErrorMessages, renderFieldErrorMessages } from './helper/field-errors';
 import { Col } from '../grid/col';
+import { pickColLayoutProps } from './helper/clean-grid-props';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -21,12 +22,12 @@ export const ArrayInput = (props: ArrayInputProps) => {
     label,
     placeholder = '',
     info,
-    size = 12,
     disabled = false,
     maxLength,
     minLength,
   } = props;
 
+  const layoutProps = pickColLayoutProps(props as Record<string, unknown>);
   const { formMethods, readOnly: providerReadOnly } = useFormContext();
   const readOnly = props.readOnly ?? providerReadOnly ?? false;
   const locked = disabled || readOnly;
@@ -39,7 +40,7 @@ export const ArrayInput = (props: ArrayInputProps) => {
     collectFieldErrorMessages((errors as any)?.[name]?.[index]);
 
   return (
-    <Col size={size}>
+    <Col {...(Object.keys(layoutProps).length ? layoutProps : { size: 12 })}>
       <Box sx={{ mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, pr: info ? 4 : 0 }}>
           {label && (

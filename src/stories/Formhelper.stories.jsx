@@ -25,6 +25,11 @@ export default {
   tags: ['autodocs'],
   parameters: {
     controls: { expanded: true },
+    docs: {
+      description: {
+        component: 'Grid sizing on `Input` and `Col` accepts both syntaxes: MUI v9 `size` (a number or a responsive map, e.g. `size={6}` or `size={{ xs: 12, md: 6 }}`) and MUI v5 breakpoint props (e.g. `xs={12} md={6}`). If both are given, `size` takes precedence.',
+      },
+    },
   },
   argTypes: {
     name: hiddenControl,
@@ -400,18 +405,23 @@ const commonArgTypes = {
   readOnly: { control: 'boolean' },
   disabled: { control: 'boolean' },
   size: {
-    control: { type: 'number', min: 1, max: 12, step: 1 },
-    description: 'Grid column span (default 3). Responsive maps such as { xs: 12, md: 6 } are valid in code.',
+    control: 'object',
+    description: 'MUI v5>latest syntax supported. Grid column span (default 3): a number (6) or a responsive map ({ "xs": 12, "md": 6 }). Takes precedence over xs/sm/md/lg/xl.',
   },
   sizeInput: {
     control: 'select',
     options: ['small', 'medium'],
     description: 'Visual size of the input control; independent of the Grid column size.',
   },
-  xs: shown({
-    control: { type: 'number', min: 1, max: 12, step: 1 },
-    description: 'Deprecated; use size instead (for example, size={{ xs: 6 }}).',
-  }),
+  ...Object.fromEntries(
+    ['xs', 'sm', 'md', 'lg', 'xl'].map((bp) => [
+      bp,
+      shown({
+        control: { type: 'number', min: 1, max: 12, step: 1 },
+        description: `v5>latest syntax. Breakpoint column span (${bp}); ignored when size is set.`,
+      }),
+    ]),
+  ),
   name: hideArg,
 };
 
@@ -516,16 +526,42 @@ const InteractiveField = ({
   defaultValues = {},
   maxLength,
   minLength,
+  showDisabledOption,
   ...inputArgs
-}) => (
-  <SimpleWrapper defaultValues={defaultValues} onSubmit={onSubmit}>
-    <Input
-      {...inputArgs}
-      {...(maxLength === '' || maxLength == null ? {} : { maxLength: Number(maxLength) })}
-      {...(minLength === '' || minLength == null ? {} : { minLength: Number(minLength) })}
-    />
-  </SimpleWrapper>
-);
+}) => {
+  if (showDisabledOption) {
+    const hasText2 = ['options', 'optionsMulti', 'optionsRadio', 'optionsCheckbox']
+      .some((prop) => Array.isArray(inputArgs[prop]) && inputArgs[prop].some((o) => o.text2 !== undefined));
+    const disabledOption = {
+      key: 'disabledDemo',
+      text: 'Disabled option',
+      company: 'Not selectable',
+      state: 'N/A',
+      ...(hasText2 ? { text2: 'Not selectable' } : {}),
+      disabled: true,
+    };
+    for (const prop of ['options', 'optionsMulti', 'optionsRadio', 'optionsCheckbox']) {
+      if (Array.isArray(inputArgs[prop])) inputArgs[prop] = [...inputArgs[prop], disabledOption];
+    }
+  }
+  return (
+    <SimpleWrapper defaultValues={defaultValues} onSubmit={onSubmit}>
+      <Input
+        {...inputArgs}
+        {...(maxLength === '' || maxLength == null ? {} : { maxLength: Number(maxLength) })}
+        {...(minLength === '' || minLength == null ? {} : { minLength: Number(minLength) })}
+      />
+    </SimpleWrapper>
+  );
+};
+
+const showDisabledOptionArgs = { showDisabledOption: true };
+const showDisabledOptionArgTypes = {
+  showDisabledOption: {
+    control: 'boolean',
+    description: 'Appends an option with `disabled: true` ({ key, text, disabled }) to the list',
+  },
+};
 
 const InputTypesDemo = () => (
   <SimpleWrapper
@@ -692,9 +728,11 @@ export const RadioStory = {
     row: true,
     optionsRadio: option.task.status,
     disabledKeys: ['inProgress'],
+    ...showDisabledOptionArgs,
   },
   argTypes: {
     ...commonArgTypes,
+    ...showDisabledOptionArgTypes,
     row: shown({ control: 'boolean' }),
     optionsRadio: shown({ control: 'object' }),
     disabledKeys: shown({ control: 'object' }),
@@ -711,9 +749,11 @@ export const SelectStory = {
     placeholder: '',
     select: true,
     options: option.task.status,
+    ...showDisabledOptionArgs,
   },
   argTypes: {
     ...commonArgTypes,
+    ...showDisabledOptionArgTypes,
     placeholder: { control: 'text' },
     autoWidth: shown({ control: 'boolean' }),
     select: hideArg,
@@ -730,9 +770,11 @@ export const SelectMultiStory = {
     label: 'Tags',
     placeholder: '',
     optionsMulti: option.task.names,
+    ...showDisabledOptionArgs,
   },
   argTypes: {
     ...textEntryArgTypes,
+    ...showDisabledOptionArgTypes,
     optionsMulti: shown({ control: 'object' }),
     ...autocompleteArgTypes,
   },
@@ -747,13 +789,70 @@ export const SelectAutocompleteStory = {
     label: 'Role',
     placeholder: '',
     options: option.task.status,
+    ...showDisabledOptionArgs,
   },
   argTypes: {
     ...textEntryArgTypes,
+    ...showDisabledOptionArgTypes,
     options: shown({ control: 'object' }),
     ...autocompleteArgTypes,
   },
   render: (args) => <InteractiveField {...args} />,
+};
+
+export const SelectAutocompleteMulticolumnStory = {
+  name: 'Input (SelectAutocomplete multicolumn)',
+  parameters: {
+    docs: {
+      description: {
+        story: 'Bind dropdown columns to option attributes with `columns`: `{ attribute: { heading, width, align, searchable, render } }` (a bare string is the heading). `width`: number = px, string = CSS grid track (`2fr`, `120px`). `searchable: false` excludes a column from filtering. Without `columns`, `text2` is shorthand for a two-column layout with no header. A column whose attribute is missing renders an empty cell.',
+      },
+    },
+  },
+  args: {
+    ...textEntryArgs,
+    name: 'person',
+    label: 'Person',
+    placeholder: '',
+    size: 6,
+    useText2Shorthand: false,
+    options: [
+      { key: 1, text: 'Alice', company: 'Acme', state: 'FL' },
+      { key: 2, text: 'Bob', company: 'Globex', state: 'NY' },
+      { key: 3, text: 'Carol', company: 'Initech', state: 'TX' },
+    ],
+    columns: {
+      text: { heading: 'Name', width: '2fr' },
+      company: { heading: 'Company', width: '2fr' },
+      state: { heading: 'State', width: 70, searchable: false },
+    },
+    ...showDisabledOptionArgs,
+  },
+  argTypes: {
+    ...textEntryArgTypes,
+    ...showDisabledOptionArgTypes,
+    useText2Shorthand: {
+      control: 'boolean',
+      description: 'Ignores `columns` and maps each option\'s company to `text2` for the header-less two-column shorthand',
+    },
+    options: shown({ control: 'object' }),
+    columns: shown({
+      control: 'object',
+      description: 'Bind columns to option attributes: { attribute: { heading, width, align, searchable } } or { attribute: "Heading" }',
+    }),
+    ...autocompleteArgTypes,
+  },
+  render: ({ useText2Shorthand, ...args }) => (
+    <InteractiveField
+      {...args}
+      {...(useText2Shorthand
+        ? {
+            columns: undefined,
+            options: args.options.map((o) => ({ key: o.key, text: o.text, text2: o.company, disabled: o.disabled })),
+          }
+        : {})}
+    />
+  ),
 };
 
 export const SelectCheckboxStory = {
@@ -764,9 +863,11 @@ export const SelectCheckboxStory = {
     label: 'Tags',
     placeholder: '',
     optionsCheckbox: option.task.names,
+    ...showDisabledOptionArgs,
   },
   argTypes: {
     ...textEntryArgTypes,
+    ...showDisabledOptionArgTypes,
     optionsCheckbox: shown({ control: 'object' }),
     ...autocompleteArgTypes,
   },

@@ -7,6 +7,8 @@ import IconKeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import { useCleanParentProps } from './helper/clean-parent-props';
 import { pickColLayoutProps } from './helper/clean-grid-props';
 import { getOptionLabelByKey } from './helper/option-display';
+import { useOptionColumns } from './helper/option-columns';
+import type { OptionColumns } from './helper/option-columns';
 import { useFormField, UseFormFieldProps } from './form-provider';
 import { Info } from './info';
 import { ColPadded } from '../grid';
@@ -17,10 +19,13 @@ export type SelectAutocompleteOption = Option;
 
 export type SelectAutocompleteProps = UseFormFieldProps & FormControlProps & TextEntryProps & {
   options?: Options;
+  /** Bind dropdown columns to option attributes: { text: { heading: 'Name', width: '2fr' }, state: 'State' } */
+  columns?: OptionColumns;
 };
 
 export const SelectAutocomplete = memo((props: SelectAutocompleteProps) => {
   const options = useMemo(() => props.options ?? [], [props.options]);
+  const columnProps = useOptionColumns(options, props.columns);
   const { field, readOnly, errorMui, identityProps } = useFormField(props);
   const isReadOnly = readOnly;
 
@@ -81,6 +86,7 @@ export const SelectAutocomplete = memo((props: SelectAutocompleteProps) => {
         options={options}
         getOptionDisabled={option => !!option.disabled}
         getOptionLabel={o => o?.text ?? ''}
+        {...columnProps}
         onChange={onChange}
         onBlur={onBlur}
         value={selectedOption}

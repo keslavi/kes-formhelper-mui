@@ -19,7 +19,21 @@ export {
 } from './helper/field-errors';
 
 export type { FormControlProps, TextEntryProps } from './control-props';
-export type { Option, Options } from './option';
+export type { Option, Options, OptionGroup, OptionGroups } from './option';
+export { getOptions, DEFAULT_GROUP } from './option';
+export {
+	createOptionSlice,
+	createOptionHooks,
+	optionsSourceSet,
+	optionsSourceReset,
+	optionsAllSelector,
+	optionsGroupSelector,
+	optionsSelector,
+	useOptionsAll,
+	useOptionsGroup,
+	useOptions,
+} from './option-slice';
+export type { OptionSlice } from './option-slice';
 export type { GridColSize } from './helper/clean-grid-props';
 
 export { Label } from './label';

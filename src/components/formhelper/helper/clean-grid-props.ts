@@ -124,6 +124,32 @@ export const pickColSizing = ({ size, xs, sm, md, lg, xl }: ColSizeProps): Recor
   return ret;
 };
 
+export type HeaderSize = number | Partial<Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', number>>;
+
+/**
+ * Splits a 12-column header row into left/right sizes. `size` is the left span, either a number
+ * or a responsive map ({ xs: 12, md: 8 }); the right side gets the remainder at each breakpoint
+ * and is hidden where it would be empty.
+ */
+export const splitHeaderSize = (
+  size: HeaderSize | undefined,
+  hasRight: boolean,
+): { left: HeaderSize; right: HeaderSize; rightSx: Record<string, unknown> } => {
+  if (!hasRight) return { left: 12, right: 0, rightSx: { display: 'none' } };
+  const left = size ?? 10;
+  if (typeof left === 'number') {
+    return { left, right: 12 - left, rightSx: left >= 12 ? { display: 'none' } : {} };
+  }
+  const right: Record<string, number> = {};
+  const display: Record<string, string> = {};
+  for (const [bp, value] of Object.entries(left)) {
+    if (typeof value !== 'number') continue;
+    right[bp] = Math.max(0, 12 - value);
+    display[bp] = value >= 12 ? 'none' : 'flex';
+  }
+  return { left, right, rightSx: { display } };
+};
+
 const isPassthroughAttr = (key: string): boolean =>
   key.startsWith('data-') || key.startsWith('aria-');
 
