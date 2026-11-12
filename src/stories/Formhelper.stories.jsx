@@ -16,6 +16,7 @@ import {
   TextareaDebug,
   maskPattern,
 } from '@formhelper';
+import { sampleEin, sampleSsn } from './sample-data';
 
 const hiddenControl = { table: { disable: true } };
 
@@ -102,7 +103,7 @@ const initialValues = {
   body: 'Call customer to confirm requirements and next steps.',
   userAssigned: 'DOMAIN\\user.name',
   names: ['steve'],
-  ssn: '123456789',
+  ssn: sampleSsn,
   status: 'new',
   result: 'unknown',
   dfrom: '2024-01-15',
@@ -178,7 +179,7 @@ const DemoForm = ({ readOnly = false }) => {
             name="ssn"
             label="Social Security Number"
             mask={maskPattern.ssn}
-            placeholder="123-45-6789"
+            placeholder="###-##-####"
           />
 
           <Input
@@ -241,6 +242,7 @@ import {
   TextareaDebug,
   maskPattern,
 } from '../components';
+import { sampleSsn } from './sample-data';
 
 /** Option structure like store.use.option(): { task: { status: [], result: [], names: [] } } */
 const option = {
@@ -269,7 +271,7 @@ const initialValues = {
   body: 'Call customer to confirm requirements and next steps.',
   userAssigned: 'DOMAIN\\\\user.name',
   names: ['steve'],
-  ssn: '123456789',
+  ssn: sampleSsn,
   status: 'new',
   result: 'unknown',
   dfrom: '2024-01-15',
@@ -341,7 +343,7 @@ const DemoForm = () => {
             name="ssn"
             label="Social Security Number"
             mask={maskPattern.ssn}
-            placeholder="123-45-6789"
+            placeholder="###-##-####"
           />
 
           <Input
@@ -578,7 +580,7 @@ const InputTypesDemo = () => (
       demoTextarea: 'Textarea content',
       demoDate: '2026-09-29',
       demoDateMask: '1990-05-15',
-      demoTextMask: '123456789',
+      demoTextMask: sampleSsn,
       demoArray: ['First item'],
     }}
   >
@@ -855,6 +857,94 @@ export const SelectAutocompleteMulticolumnStory = {
   ),
 };
 
+const addNewOptionSchema = yup.object({
+  key: yup.string().trim(),
+  text: yup.string().trim().required('Text is required'),
+});
+
+/** Sample `addNew` form: owns its FormProvider and stops the submit from reaching the parent form. */
+const AddNewOptionForm = (props) => {
+  const formMethods = useFormProvider({ resolver: yupResolver(addNewOptionSchema) });
+  const onSubmit = (e) => {
+    e.stopPropagation();
+    return formMethods.handleSubmit((values) => props.onSubmit?.(values))(e);
+  };
+  return (
+    <FormProvider formMethods={formMethods} formProps={{ onSubmit }}>
+      <Row>
+        <Input name="key" label="Key" placeholder="Defaults to Text when blank" size={12} />
+        <Input name="text" label="Text" size={12} />
+        <Col size={12} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Button type="submit" variant="contained">Save</Button>
+        </Col>
+      </Row>
+    </FormProvider>
+  );
+};
+
+export const SelectAutocompleteAddNewStory = {
+  name: 'Input (SelectAutocomplete Add New)',
+  parameters: {
+    docs: {
+      description: {
+        story: '`addNew` takes a form component that renders its own `FormProvider`. An "Add New" option is always listed last (also when filtering finds nothing); choosing it opens the form in `ModalCommon`. The form receives an `onSubmit(values)` prop: it wraps the form\'s own `onSubmit` and closes the modal, and if the form\'s `onSubmit` returns an option `{ key, text }`, that option is appended and selected. The form must call `e.stopPropagation()` on the raw submit event (before `handleSubmit`), because the modal is still inside the parent form\'s React tree. The modal closes on Save, the close icon, Escape, or a click outside.',
+      },
+      source: {
+        code: `const AddNewOptionForm = (props) => {
+  const formMethods = useFormProvider({ resolver: yupResolver(schema) });
+  const onSubmit = (e) => {
+    e.stopPropagation();
+    return formMethods.handleSubmit((values) => props.onSubmit?.(values))(e);
+  };
+  return (
+    <FormProvider formMethods={formMethods} formProps={{ onSubmit }}>
+      <Input name="key" label="Key" />
+      <Input name="text" label="Text" />
+      <Button type="submit">Save</Button>
+    </FormProvider>
+  );
+};
+
+<Input
+  name="status"
+  label="Status"
+  options={option.task.status}
+  addNew={
+    <AddNewOptionForm
+      onSubmit={(values) => ({ key: values.key || values.text, text: values.text })}
+    />
+  }
+/>`,
+      },
+    },
+  },
+  args: {
+    ...textEntryArgs,
+    name: 'statusAddNew',
+    label: 'Status',
+    placeholder: '',
+    options: option.task.status,
+    addNewLabel: 'Add New',
+  },
+  argTypes: {
+    ...textEntryArgTypes,
+    options: shown({ control: 'object' }),
+    addNewLabel: shown({ control: 'text', description: 'Text of the "Add New" option and the modal header' }),
+    addNew: hideArg,
+    ...autocompleteArgTypes,
+  },
+  render: (args) => (
+    <InteractiveField
+      {...args}
+      addNew={
+        <AddNewOptionForm
+          onSubmit={(values) => ({ key: values.key || values.text, text: values.text })}
+        />
+      }
+    />
+  ),
+};
+
 export const SelectCheckboxStory = {
   name: 'Input (SelectCheckbox)',
   args: {
@@ -971,15 +1061,15 @@ export const PatternStory = {
   name: 'Pattern & Mask Examples',
   render: () => (
     <SimpleWrapper defaultValues={{
-      ssn: '123456789',
-      ein: '123456789',
+      ssn: sampleSsn,
+      ein: sampleEin,
       zip: '12345',
     }}>
       <Input
         name="ssn"
         label="SSN (pattern + mask example)"
         pattern={maskPattern.ssn}
-        placeholder="123-45-6789"
+        placeholder="###-##-####"
         info="Mask pattern (maskPattern.ssn): ###-##-#### · HTML pattern example: \\d{3}-\\d{2}-\\d{4}"
         mask={maskPattern.ssn}
       />
@@ -987,7 +1077,7 @@ export const PatternStory = {
         name="ein"
         label="EIN"
         pattern={maskPattern.ein}
-        placeholder="12-3456789"
+        placeholder="##-#######"
         info="Mask pattern (maskPattern.ein): ##-####### · HTML pattern example: \\d{2}-\\d{7}"
         mask={maskPattern.ein}
       />

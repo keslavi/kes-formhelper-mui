@@ -10,6 +10,7 @@ import {
 
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assertNoSensitivePatterns } from './scan-sensitive-patterns.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
@@ -66,6 +67,11 @@ export function copyBuildArtifacts(targets) {
   const distSrc = join(root, 'dist');
   const storybookSrc = join(root, 'storybook-static');
   let copied = false;
+
+  assertNoSensitivePatterns(
+    [targets.dist && distSrc, targets.storybook && storybookSrc].filter(Boolean),
+    root,
+  );
 
   if (targets.dist) {
     if (!copyDir(distSrc, targets.dist)) {

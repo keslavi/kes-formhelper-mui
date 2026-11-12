@@ -95,6 +95,7 @@ export type {
   SelectMultiProps,
   SelectAutocompleteOption,
   SelectAutocompleteProps,
+  AddNewFormProps,
   SelectCheckboxOption,
   SelectCheckboxProps,
   TextareaProps,

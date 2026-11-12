@@ -12,6 +12,7 @@ import {
 import { tmpdir } from 'os';
 import { dirname, extname, join } from 'path';
 import { fileURLToPath } from 'url';
+import { assertNoSensitivePatterns } from './scan-sensitive-patterns.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
@@ -151,6 +152,7 @@ try {
 }
 
 const sanitized = sanitizeStorybookStatic();
+assertNoSensitivePatterns([dest], root);
 const topLevel = readdirSync(dest).sort().join(', ');
 console.log(`Staged uncompressed npm pack contents in ${dest}`);
 console.log(`Top-level: ${topLevel}`);

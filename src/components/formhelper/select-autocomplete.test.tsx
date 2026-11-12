@@ -1,5 +1,9 @@
 import { TestHarness } from './test/testHarness';
 import { Input } from './input';
+import { FormProvider, useFormProvider } from './form-provider';
+import type { AddNewFormProps } from './select-autocomplete';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 const statusOptions = [
   { key: 0, text: 'pending' },
@@ -290,6 +294,198 @@ describe('Formhelper-SelectAutocomplete', () => {
     expect(clearButton).toBeTruthy();
     await user.click(clearButton);
     expect(input).toHaveValue('');
+  });
+
+  const AddNewStatusForm = (props: AddNewFormProps & { schema?: yup.AnyObjectSchema }) => {
+    const formMethods = useFormProvider(props.schema ? { resolver: yupResolver(props.schema) } : {});
+    const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+      e.stopPropagation();
+      return formMethods.handleSubmit(values => props.onSubmit?.(values))(e);
+    };
+    return (
+      <FormProvider formMethods={formMethods} formProps={{ onSubmit }}>
+        <Input name="statusName" label="Status Name" />
+        <button type="submit">Save</button>
+      </FormProvider>
+    );
+  };
+
+  it('submits the addNew form in a modal, closes it, and does not submit the parent form', async () => {
+    const outerSubmit = vi.fn();
+    const onAddNew = vi.fn((values: Record<string, any>) => ({ key: 99, text: values.statusName }));
+    render(
+      <TestHarness item={{}} onSubmit={outerSubmit}>
+        <Input
+          name="status"
+          label="Status"
+          options={statusOptions}
+          data-testid="status-select"
+          addNew={<AddNewStatusForm onSubmit={onAddNew} />}
+        />
+      </TestHarness>
+    );
+
+    const input = screen.getByTestId('status-select').querySelector('input')!;
+    await user.click(input);
+    const addNewOption = await screen.findByRole('option', { name: 'Add New' });
+    expect(screen.getAllByRole('option').at(-1)).toBe(addNewOption);
+    await user.click(addNewOption);
+    const dialog = await screen.findByRole('dialog');
+    expect(input).toHaveValue('');
+    expect(within(dialog).getByText('Add New')).toBeInTheDocument();
+
+    await user.type(within(dialog).getByRole('textbox', { name: 'Status Name' }), 'on hold');
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(onAddNew).toHaveBeenCalledWith({ statusName: 'on hold' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(outerSubmit).not.toHaveBeenCalled();
+    expect(screen.getByTestId('status-select').querySelector('input')).toHaveValue('on hold');
+
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    await waitFor(() => expect(outerSubmit).toHaveBeenCalledWith({ status: 99 }));
+  });
+
+  it('keeps Add New at the bottom while filtering, even with no matches', async () => {
+    render(
+      <TestHarness item={{}}>
+        <Input name="status" label="Status" options={statusOptions} data-testid="status-select" addNew={<AddNewStatusForm />} />
+      </TestHarness>
+    );
+    const input = screen.getByTestId('status-select').querySelector('input')!;
+    await user.click(input);
+    await user.type(input, 'pend');
+    await waitFor(() => expect(screen.getAllByRole('option').map(o => o.textContent)).toEqual(['pending', 'Add New']));
+    await user.clear(input);
+    await user.type(input, 'zzz');
+    await waitFor(() => expect(screen.getAllByRole('option').map(o => o.textContent)).toEqual(['Add New']));
+  });
+
+  it('closes the addNew modal when the child has no onSubmit of its own', async () => {
+    render(
+      <TestHarness item={{}}>
+        <Input name="status" label="Status" options={statusOptions} data-testid="status-select" addNew={<AddNewStatusForm />} />
+      </TestHarness>
+    );
+
+    await user.click(screen.getByTestId('status-select').querySelector('input')!);
+    await user.click(await screen.findByRole('option', { name: 'Add New' }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('keeps the modal open and the parent form unsubmitted when addNew validation fails', async () => {
+    const outerSubmit = vi.fn();
+    const onAddNew = vi.fn();
+    const schema = yup.object({ statusName: yup.string().trim().required('Status name is required') });
+    render(
+      <TestHarness item={{}} onSubmit={outerSubmit}>
+        <Input
+          name="status"
+          label="Status"
+          options={statusOptions}
+          data-testid="status-select"
+          addNew={<AddNewStatusForm schema={schema} onSubmit={onAddNew} />}
+        />
+      </TestHarness>
+    );
+
+    await user.click(screen.getByTestId('status-select').querySelector('input')!);
+    await user.click(await screen.findByRole('option', { name: 'Add New' }));
+    const dialog = await screen.findByRole('dialog');
+    await user.type(within(dialog).getByRole('textbox', { name: 'Status Name' }), '   ');
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+    expect(await within(dialog).findByText('Status name is required')).toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(onAddNew).not.toHaveBeenCalled();
+    expect(outerSubmit).not.toHaveBeenCalled();
+  });
+
+  it('closes the addNew modal on Escape without submitting', async () => {
+    const onAddNew = vi.fn();
+    render(
+      <TestHarness item={{ status: 1 }}>
+        <Input
+          name="status"
+          label="Status"
+          options={statusOptions}
+          data-testid="status-select"
+          addNew={<AddNewStatusForm onSubmit={onAddNew} />}
+        />
+      </TestHarness>
+    );
+    const input = screen.getByTestId('status-select').querySelector('input')!;
+    await waitFor(() => expect(input).toHaveValue('in progress'));
+
+    await user.click(input);
+    await user.click(await screen.findByRole('option', { name: 'Add New' }));
+    await screen.findByRole('dialog');
+    await user.keyboard('{Escape}');
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(onAddNew).not.toHaveBeenCalled();
+    expect(input).toHaveValue('in progress');
+  });
+
+  it('opens the addNew modal from the keyboard', async () => {
+    render(
+      <TestHarness item={{}}>
+        <Input name="status" label="Status" options={statusOptions} data-testid="status-select" addNew={<AddNewStatusForm />} />
+      </TestHarness>
+    );
+    await user.click(screen.getByTestId('status-select').querySelector('input')!);
+    await screen.findByRole('option', { name: 'Add New' });
+    await user.keyboard('{ArrowUp}{Enter}');
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('uses addNewLabel for the option and the modal header', async () => {
+    render(
+      <TestHarness item={{}}>
+        <Input
+          name="status"
+          label="Status"
+          options={statusOptions}
+          data-testid="status-select"
+          addNewLabel="Create status"
+          addNew={<AddNewStatusForm />}
+        />
+      </TestHarness>
+    );
+    await user.click(screen.getByTestId('status-select').querySelector('input')!);
+    await user.click(await screen.findByRole('option', { name: 'Create status' }));
+    expect(within(await screen.findByRole('dialog')).getByRole('heading', { name: 'Create status' })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'Add New' })).not.toBeInTheDocument();
+  });
+
+  it('renders Add New below column rows and filters with the column filter', async () => {
+    const options = [
+      { key: 1, text: 'Alice', company: 'Acme' },
+      { key: 2, text: 'Bob', company: 'Globex' },
+    ];
+    render(
+      <TestHarness item={{}}>
+        <Input
+          name="person"
+          label="Person"
+          options={options}
+          columns={{ text: { heading: 'Name' }, company: { heading: 'Company' } }}
+          data-testid="person-select"
+          addNew={<AddNewStatusForm />}
+        />
+      </TestHarness>
+    );
+    const input = screen.getByTestId('person-select').querySelector('input')!;
+    await user.click(input);
+    expect(await screen.findByText('Company')).toBeInTheDocument();
+    const rows = screen.getAllByRole('option');
+    expect(rows.map(o => o.textContent)).toEqual(['AliceAcme', 'BobGlobex', 'Add New']);
+    expect(rows[0].querySelector('span')).toHaveStyle({ display: 'grid' });
+    expect(rows[2].querySelector('span')).toBeNull();
+
+    await user.type(input, 'Glob');
+    await waitFor(() => expect(screen.getAllByRole('option').map(o => o.textContent)).toEqual(['BobGlobex', 'Add New']));
   });
 
   it('maintains cleared state after blur', async () => {

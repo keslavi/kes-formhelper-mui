@@ -75,6 +75,7 @@ export type {
 	RadioProps,
 	SelectAutocompleteOption,
 	SelectAutocompleteProps,
+	AddNewFormProps,
 	SelectCheckboxOption,
 	SelectCheckboxProps,
 	SelectMultiOption,

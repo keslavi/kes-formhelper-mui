@@ -14,6 +14,7 @@ import {
   maskPattern,
   useFormProvider,
 } from './components';
+import { sampleSsn } from './stories/sample-data';
 
 const option = {
   task: {
@@ -41,7 +42,7 @@ const initialValues = {
   body: 'Call customer to confirm requirements and next steps.',
   userAssigned: 'DOMAIN\\user.name',
   names: ['steve'],
-  ssn: '123456789',
+  ssn: sampleSsn,
   status: 'new',
   result: 'unknown',
   dfrom: '2024-01-15',
@@ -61,6 +62,36 @@ const schema = yup.object({
   status: yup.string().required('Status is required'),
   result: yup.string().required('Result is required'),
 });
+
+const addNewStatusSchema = yup.object({
+  key: yup.string().trim(),
+  text: yup.string().trim().required('Text is required'),
+});
+
+const AddNewDropdownExample = props => {
+  const formMethods = useFormProvider({
+    resolver: yupResolver(addNewStatusSchema),
+  });
+
+  // Stop propagation on the raw submit event: this form renders in a modal that is still inside
+  // the parent form's React tree, and FormProvider's onSubmit runs only after async validation.
+  const onSubmit = e => {
+    e.stopPropagation();
+    return formMethods.handleSubmit(values => props.onSubmit?.(values))(e);
+  };
+
+  return (
+    <FormProvider formMethods={formMethods} formProps={{ onSubmit }}>
+      <Row>
+        <Input name="key" label="Key" placeholder="Defaults to Text when blank" size={12} />
+        <Input name="text" label="Text" size={12} />
+        <Col size={12} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Button type="submit" variant="contained">Save</Button>
+        </Col>
+      </Row>
+    </FormProvider>
+  );
+};
 
 const App = () => {
   const [data, setData] = useState(null);
@@ -96,13 +127,22 @@ const App = () => {
             <Input name="body" label="Body" textarea minRows={3} size={12} />
           </Row>
           <Row>
-            <Input name="status" label="Status" options={option.task.status} />
+            <Input 
+              name="status" 
+              label="Status" 
+              options={option.task.status} 
+              addNew={
+                <AddNewDropdownExample
+                  onSubmit={values => ({ key: values.key || values.text, text: values.text })}
+                />
+              }
+            />
             <Input name="result" label="Result" options={option.task.result} />
             <Input
               name="ssn"
               label="Social Security Number"
               mask={maskPattern.ssn}
-              placeholder="123-45-6789"
+              placeholder="###-##-####"
             />
             <Input name="dfrom" label="From" datepicker />
             <Input
@@ -130,7 +170,7 @@ const App = () => {
         {data && (
           <Row>
             <Col size={12}>
-              <TextareaDebug data={data} />
+              <TextareaDebug value={data} />
             </Col>
           </Row>
         )}

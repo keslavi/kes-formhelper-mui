@@ -1,4 +1,5 @@
 import { LabelMask, maskPattern } from '@formhelper';
+import { sampleDigits, sampleEin, sampleSsn } from './sample-data';
 
 export default {
   title: 'Components/LabelMask',
@@ -15,7 +16,7 @@ export default {
 };
 
 export const SSN = {
-  args: { text: '123456789', mask: 'ssn' },
+  args: { text: sampleSsn, mask: 'ssn' },
 };
 
 export const Phone = {
@@ -23,16 +24,16 @@ export const Phone = {
 };
 
 export const EIN = {
-  args: { text: '123456789', mask: 'ein' },
+  args: { text: sampleEin, mask: 'ein' },
 };
 
 export const ShowLast4 = {
   name: 'SSN – Show Last 4',
-  args: { text: '123456789', mask: 'ssn', showLast: 4 },
+  args: { text: sampleSsn, mask: 'ssn', showLast: 4 },
 };
 
 export const AlwaysVisible = {
-  args: { text: '123456789', mask: 'ssn', persistent: true },
+  args: { text: sampleSsn, mask: 'ssn', persistent: true },
 };
 
 export const NoMask = {
@@ -57,10 +58,10 @@ export const AllMasks = {
             <td style={{ padding: '4px 16px' }}>{key}</td>
             <td style={{ padding: '4px 16px', color: '#888' }}>{pattern}</td>
             <td style={{ padding: '4px 16px' }}>
-              <LabelMask mask={key} text={'12345678901234'} />
+              <LabelMask mask={key} text={sampleDigits} />
             </td>
             <td style={{ padding: '4px 16px' }}>
-              <LabelMask mask={key} text={'12345678901234'} persistent />
+              <LabelMask mask={key} text={sampleDigits} persistent />
             </td>
           </tr>
         ))}

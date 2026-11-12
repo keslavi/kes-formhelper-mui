@@ -27,7 +27,7 @@ export const ArrayInput = (props: ArrayInputProps) => {
     minLength,
   } = props;
 
-  const layoutProps = pickColLayoutProps(props as Record<string, unknown>);
+  const layoutProps = pickColLayoutProps({ ...props });
   const { formMethods, readOnly: providerReadOnly } = useFormContext();
   const readOnly = props.readOnly ?? providerReadOnly ?? false;
   const locked = disabled || readOnly;

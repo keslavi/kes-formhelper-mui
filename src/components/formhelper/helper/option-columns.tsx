@@ -1,5 +1,5 @@
 import { forwardRef, useMemo } from 'react';
-import type { HTMLAttributes, ReactNode } from 'react';
+import type { HTMLAttributes, Key, ReactNode } from 'react';
 import { createFilterOptions, Paper } from '@mui/material';
 import type { PaperProps } from '@mui/material';
 import type { Option, Options } from '../option';
@@ -73,7 +73,7 @@ export const columnsFilter = (columns: NormalizedColumn[]) =>
 
 const renderColumnsOption = (columns: NormalizedColumn[]) => {
   const template = columnsTemplate(columns);
-  return (props: HTMLAttributes<HTMLLIElement> & { key?: string }, option: Option) => {
+  return (props: HTMLAttributes<HTMLLIElement> & { key?: Key }, option: Option) => {
     const { key, ...rest } = props;
     return (
       <li key={key} {...rest}>
@@ -114,12 +114,18 @@ const columnsPaper = (columns: NormalizedColumn[]) => {
   return ColumnsPaper;
 };
 
+export interface OptionColumnsProps {
+  filterOptions?: ReturnType<typeof columnsFilter>;
+  renderOption?: ReturnType<typeof renderColumnsOption>;
+  slots?: { paper: ReturnType<typeof columnsPaper> };
+}
+
 /**
  * Props to spread onto any MUI Autocomplete to render its options as columns.
  * Returns an empty object when no columns apply, so single-column lists are untouched.
  */
 export const useOptionColumns = (options: Options | undefined, columns: OptionColumns | undefined) =>
-  useMemo(() => {
+  useMemo<OptionColumnsProps>(() => {
     const normalized = normalizeColumns(columns, options);
     if (normalized.length === 0) return {};
     const hasHeadings = normalized.some(c => c.heading);

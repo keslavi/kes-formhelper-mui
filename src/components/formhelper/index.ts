@@ -64,7 +64,7 @@ export { SelectMulti } from './select-multi';
 export type { SelectMultiOption, SelectMultiProps } from './select-multi';
 
 export { SelectAutocomplete } from './select-autocomplete';
-export type { SelectAutocompleteOption, SelectAutocompleteProps } from './select-autocomplete';
+export type { AddNewFormProps, SelectAutocompleteOption, SelectAutocompleteProps } from './select-autocomplete';
 
 export { SelectCheckbox } from './select-checkbox';
 export type { SelectCheckboxOption, SelectCheckboxProps } from './select-checkbox';
