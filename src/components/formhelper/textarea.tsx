@@ -58,7 +58,7 @@ export const Textarea = memo((props: TextareaProps) => {
   }, [isWithinLimit, currentLength, props.charCount, field.ref]);
 
   const hasError = errorMui?.error || hasCountError;
-  const labelStyle = hasError ? { color: color.primary.red } : {};
+  const labelStyle = hasError ? { color: color.cobe1.red } : {};
   const parentProps = useCleanParentProps(props, 'textarea');
   const placeholder = props.placeholder ?? parentProps.placeholder;
 
@@ -82,7 +82,7 @@ export const Textarea = memo((props: TextareaProps) => {
         style={{
           width: '100%',
           border: hasError
-            ? `1px solid ${color.primary.red}`
+            ? `1px solid ${color.cobe1.red}`
             : readOnly
               ? '0px solid transparent'
               : `1px solid ${(color as any).cobe1?.grey ?? '#ccc'}`,
@@ -93,7 +93,7 @@ export const Textarea = memo((props: TextareaProps) => {
           fontFamily: 'inherit',
           fontSize: 14,
           lineHeight: 1.5,
-          color: hasError ? color.primary.red : 'inherit',
+          color: 'inherit',
         }}
         {...identityProps}
         {...(props.minRows && { minRows: props.minRows })}
@@ -111,7 +111,7 @@ export const Textarea = memo((props: TextareaProps) => {
       {props.info && <Info id={`${field.name}Info`} info={props.info} />}
       {props.charCount && (
         <FormHelperText
-          className={hasCountError ? 'Mui-error' : 'primaryText'}
+          className="primaryText"
           style={{ marginTop: -2 }}
         >
           {msgChars}

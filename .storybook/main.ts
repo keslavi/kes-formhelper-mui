@@ -1,9 +1,8 @@
 import type { StorybookConfig } from '@storybook/react-vite';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { STORYBOOK_BASE_PATH } from '../src/storybook-constants.ts';
 
-const dirname = typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
+const dirname = import.meta.dirname;
 
 const config: StorybookConfig = {
   stories: [
@@ -33,6 +32,7 @@ const config: StorybookConfig = {
     if (config.build) {
       delete config.build.lib;
       delete config.build.rollupOptions;
+      delete config.build.rolldownOptions;
     }
 
     config.plugins = config.plugins?.filter((plugin) => {

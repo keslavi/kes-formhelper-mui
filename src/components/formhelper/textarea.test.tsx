@@ -1,6 +1,5 @@
 import { TestHarness } from './test/testHarness';
 import { Input } from './input';
-import { color } from '../../theme-material';
 
 describe('Formhelper-TextArea', () => {
   let user: ReturnType<typeof userEvent.setup>;
@@ -31,7 +30,7 @@ describe('Formhelper-TextArea', () => {
     expect(screen.getByText('22 / 50 characters')).toHaveClass('primaryText');
   });
 
-  it('shows count in red when exceeding the limit', async () => {
+  it('turns the label and border red when exceeding the limit without coloring the count', async () => {
     render(
       <TestHarness item={{}}>
         <Input name="description" label="Description" textarea charCount={20} data-testid="description-textarea" />
@@ -41,10 +40,16 @@ describe('Formhelper-TextArea', () => {
     await user.type(textarea, 'This is a very long message that exceeds the character limit');
 
     const charCountEl = screen.getByText((_, el) => el?.textContent === '60 / 20 characters');
-    expect(charCountEl).toHaveClass('Mui-error');
-    expect(textarea).toHaveStyle({ color: color.primary.red });
-    // border uses inline style with CSS var — verify the attribute exists with the error color token
-    expect(textarea).toHaveAttribute('style', expect.stringContaining(color.primary.red));
+    expect(charCountEl).toHaveClass('primaryText');
+    expect(charCountEl).not.toHaveClass('Mui-error');
+    expect(charCountEl).not.toHaveStyle({ color: 'rgb(211, 47, 47)' });
+    expect(charCountEl).not.toHaveStyle({ color: 'rgb(2, 65, 206)' });
+
+    const label = screen.getByText('Description');
+    expect(label).toHaveStyle({ color: 'rgb(211, 47, 47)' });
+    expect(textarea).toHaveStyle({ borderColor: 'rgb(211, 47, 47)' });
+    expect(textarea).not.toHaveStyle({ color: 'rgb(2, 65, 206)' });
+    expect(textarea).not.toHaveStyle({ color: 'rgb(211, 47, 47)' });
   });
 
   it('prevents form submission when character count exceeds limit', async () => {
