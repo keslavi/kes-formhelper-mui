@@ -15,7 +15,7 @@ export const TextMaskExample = () => {
   const onSubmit = (data) => {
     console.log(["mask"],'Form data:', data);
     // Note: The stored values will be clean (without mask characters)
-    // e.g., ssn: "123456789" instead of "123-45-6789"
+    // e.g., ssn: "#########" instead of "###-##-####"
   };
 
   return (

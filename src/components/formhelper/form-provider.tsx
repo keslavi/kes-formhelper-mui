@@ -99,7 +99,8 @@ export const useFormProvider = <T extends FieldValues = FieldValues>(
 
 export interface FormProviderProps {
   children: ReactNode;
-  onSubmit: (data: any) => void;
+  /** Omit when `formProps.onSubmit` handles submission */
+  onSubmit?: (data: any) => void;
   readOnly?: boolean;
   formProps?: React.FormHTMLAttributes<HTMLFormElement>;
   formOptions?: UseFormProps<any>;
@@ -142,7 +143,7 @@ export const FormProvider = ({
 
   return (
     <FormContext.Provider value={value}>
-      <form onSubmit={handleSubmit(onSubmit)} {...formProps}>
+      <form onSubmit={handleSubmit(onSubmit ?? (() => {}))} {...formProps}>
         {children}
       </form>
     </FormContext.Provider>

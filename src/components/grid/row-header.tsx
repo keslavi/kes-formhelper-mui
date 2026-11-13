@@ -2,7 +2,8 @@ import { color } from '../../theme-material';
 import { Grid } from '@mui/material';
 import type { GridProps } from '@mui/material';
 import { isEmpty } from 'lodash';
-import { useCleanGridProps } from '../formhelper/helper/clean-grid-props';
+import { splitHeaderSize, useCleanGridProps } from '../formhelper/helper/clean-grid-props';
+import type { HeaderSize } from '../formhelper/helper/clean-grid-props';
 import React from 'react';
 
 interface RowHeaderProps extends Omit<GridProps, 'color'> {
@@ -11,7 +12,7 @@ interface RowHeaderProps extends Omit<GridProps, 'color'> {
   children?: React.ReactNode;
   backgroundColor?: string;
   color?: string;
-  size?: number;
+  size?: HeaderSize;
 }
 
 export const RowHeader = ({
@@ -28,8 +29,8 @@ export const RowHeader = ({
   const backgroundColor2 = backgroundColor ?? color.secondary.blue700;
   const textColor2 = colorProp ?? color.primary.white;
 
-  const leftSize = isEmpty(rightcontent) ? 12 : size ?? 10;
-  const rightSize = 12 - leftSize;
+  const hasRight = !isEmpty(rightcontent);
+  const { left: leftSize, right: rightSize, rightSx } = splitHeaderSize(size, hasRight);
   const gridProps = useCleanGridProps(rest as Record<string, unknown>, 'rowHeader');
 
   return (
@@ -51,9 +52,10 @@ export const RowHeader = ({
       }}>
         <div>{leftContent2}</div>
       </Grid>
-      {leftSize < 12 && (
+      {hasRight && (
         <Grid container size={rightSize} sx={{
-          justifyContent: "flex-end"
+          justifyContent: "flex-end",
+          ...rightSx,
         }}>
           <div>{rightContent2}</div>
         </Grid>

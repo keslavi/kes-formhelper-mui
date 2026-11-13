@@ -5,7 +5,14 @@ export default {
   title: 'Components/Grid',
   component: Row,
   tags: ['autodocs'],
-  parameters: { layout: 'padded' },
+  parameters: {
+    layout: 'padded',
+    docs: {
+      description: {
+        component: '`Col` (and `Input`, which wraps a `Col`) accepts both syntaxes: MUI v9 `size` (a number or a responsive map, e.g. `size={6}` or `size={{ xs: 12, md: 6 }}`) and MUI v5 breakpoint props (e.g. `xs={12} md={6}`). If both are given, `size` takes precedence.',
+      },
+    },
+  },
 };
 
 const Panel = ({ title, children }) => (
@@ -34,6 +41,32 @@ const Tile = ({ label }) => (
     {label}
   </Box>
 );
+
+export const ColControls = {
+  name: 'Col (size / breakpoints)',
+  args: { size: { xs: 12, md: 6 }, xs: undefined, sm: undefined, md: undefined, lg: undefined, xl: undefined },
+  argTypes: {
+    size: {
+      control: 'object',
+      description: 'v9 syntax: number (6) or responsive map ({ "xs": 12, "md": 6 }). Takes precedence over xs..xl.',
+    },
+    ...Object.fromEntries(
+      ['xs', 'sm', 'md', 'lg', 'xl'].map((bp) => [
+        bp,
+        {
+          control: { type: 'number', min: 1, max: 12, step: 1 },
+          description: `v5>latest syntax: ${bp} breakpoint span; ignored when size is set.`,
+        },
+      ]),
+    ),
+  },
+  render: (args) => (
+    <Row>
+      <Col {...args}><Tile label="Col" /></Col>
+      <Col {...args}><Tile label="Col" /></Col>
+    </Row>
+  ),
+};
 
 export const BackwardCompatibility = {
   render: () => (

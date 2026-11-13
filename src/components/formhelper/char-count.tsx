@@ -10,15 +10,13 @@ import type { FormControlProps, TextEntryProps } from './control-props';
 
 const CharMessage = ({
   msg,
-  withinLimit,
   children,
 }: {
   msg: string;
-  withinLimit: boolean;
   children?: ReactNode;
 }) => (
   <>
-    <span style={{ color: withinLimit ? color.primary.gray : color.primary.red }}>
+    <span style={{ color: color.primary.gray }}>
       {msg}
     </span>
     {children && (
@@ -110,7 +108,7 @@ export const CharCount = memo((props: CharCountProps) => {
         slotProps={{ htmlInput: inputProps }}
         {...(errorMui?.error || !isWithinLimit ? { error: true } : {})}
         helperText={
-          <CharMessage msg={msgChars} withinLimit={isWithinLimit}>
+          <CharMessage msg={msgChars}>
             {errorMui.helperText}
           </CharMessage>
         }

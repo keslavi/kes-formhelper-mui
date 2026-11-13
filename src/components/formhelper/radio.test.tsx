@@ -85,7 +85,7 @@ describe('Radio', () => {
     expect(screen.getByLabelText('Available')).not.toBeDisabled();
   });
 
-  it('uses disabledKeys to override option-level disabled flags', () => {
+  it('combines disabledKeys with option-level disabled flags', () => {
     render(
       <TestHarness item={{}} noResults>
         <Input
@@ -99,7 +99,7 @@ describe('Radio', () => {
         />
       </TestHarness>,
     );
-    expect(screen.getByLabelText('Unavailable')).not.toBeDisabled();
+    expect(screen.getByLabelText('Unavailable')).toBeDisabled();
     expect(screen.getByLabelText('Available')).toBeDisabled();
   });
 });

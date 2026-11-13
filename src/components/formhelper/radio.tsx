@@ -65,9 +65,8 @@ export const Radio = memo((props: RadioProps) => {
               label={x.text}
               disabled={!!(
                 props.disabled
-                || (props.disabledKeys
-                  ? props.disabledKeys.includes(String(x.key))
-                  : x.disabled)
+                || props.disabledKeys?.includes(String(x.key))
+                || x.disabled
               )}
             />
           ))}

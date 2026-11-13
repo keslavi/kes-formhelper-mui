@@ -35,7 +35,7 @@ describe('Formhelper-CharCount', () => {
     expect(screen.getByText('22 / 50 characters')).not.toHaveStyle({ color: color.primary.red });
   });
 
-  it('shows count in red when exceeding the limit', async () => {
+  it('turns the label and border red when exceeding the limit without coloring the count', async () => {
     render(
       <TestHarness item={{}}>
         <Input name="description" label="Description" charCount={20} data-testid="description-charcount" />
@@ -45,8 +45,17 @@ describe('Formhelper-CharCount', () => {
     await user.type(input, 'This is a very long message that exceeds the character limit');
 
     const charCountEl = screen.getByText((_, el) => el?.textContent === '60 / 20 characters' && el?.tagName === 'SPAN');
-    expect(charCountEl).toHaveStyle({ color: color.primary.red });
+    expect(charCountEl).toHaveStyle({ color: 'rgb(117, 117, 117)' });
+    expect(charCountEl).not.toHaveStyle({ color: 'rgb(211, 47, 47)' });
+    expect(charCountEl).not.toHaveStyle({ color: 'rgb(2, 65, 206)' });
+
     expect(input).toHaveAttribute('aria-invalid', 'true');
+    const field = input.closest('.MuiFormControl-root');
+    const label = field?.querySelector('.MuiInputLabel-root');
+    const outline = field?.querySelector('.MuiOutlinedInput-notchedOutline');
+    expect(label).toHaveClass('Mui-error');
+    expect(label).toHaveStyle({ color: 'rgb(211, 47, 47)' });
+    expect(outline).toHaveStyle({ borderColor: 'rgb(211, 47, 47)' });
   });
 
   it('prevents form submission when character count exceeds limit', async () => {
