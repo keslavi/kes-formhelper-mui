@@ -20,7 +20,7 @@
     "prepare": "husky",
     "test": "node scripts/kill-dev-ports.mjs 5300 && vitest --ui --watch --config vitest.unit.config.js --api.port 5300 --api.strictPort",
     "test-once": "vitest run --config vitest.unit.config.js"
-  },  
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/keslavi/kes-formhelper-mui.git"
@@ -54,6 +54,7 @@
   "files": [
     "dist",
     "storybook-static",
+    "source.zip",
     "src/stories"
   ],
   "keywords": [
@@ -103,6 +104,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
     "eslint-plugin-storybook": "^10.6.7",
+    "fflate": "^0.8.3",
     "globals": "^17.14.0",
     "husky": "^9.1.7",
     "jsdom": "^31.0.0",

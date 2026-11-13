@@ -2,6 +2,25 @@
   "name": "kes-react-formhelper",
   "version": "0.1.6",
   "description": "Form helper components for MUI built on react-hook-form.",
+  "scripts": {
+    "start": "node ./scripts/start.mjs",
+    "dev": "vite",
+    "kill-ports": "node scripts/kill-dev-ports.mjs 5100 5200 5300",
+    "build": "npm run build:lib && npm run storybook-build",
+    "build:lib": "tsc -p tsconfig.app.json --noEmit && vite build",
+    "deploy:seed": "npm run build && node ./scripts/formhelper-deploy.js",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "storybook": "node scripts/kill-dev-ports.mjs 5200 && storybook dev -p 5200 --exact-port --host 127.0.0.1",
+    "storybook-build": "storybook build",
+    "storybook-deploy": "npm run storybook-build && node ./scripts/storybook-deploy.js",
+    "prepublishOnly": "npm run build",
+    "stage-package-dist": "node ./scripts/stage-package-dist.mjs",
+    "prepare": "husky",
+    "test": "node scripts/kill-dev-ports.mjs 5300 && vitest --ui --watch --config vitest.unit.config.js --api.port 5300 --api.strictPort",
+    "test-once": "vitest run --config vitest.unit.config.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/keslavi/kes-formhelper-mui.git"
@@ -35,6 +54,7 @@
   "files": [
     "dist",
     "storybook-static",
+    "source.zip",
     "src/stories"
   ],
   "keywords": [
@@ -44,25 +64,7 @@
     "react-hook-form",
     "components"
   ],
-  "scripts": {
-    "start": "node ./scripts/start.mjs",
-    "dev": "vite",
-    "kill-ports": "node scripts/kill-dev-ports.mjs 5100 5200 5300",
-    "build": "npm run build:lib && npm run storybook-build",
-    "build:lib": "tsc -p tsconfig.app.json --noEmit && vite build",
-    "deploy:seed": "npm run build && node ./scripts/formhelper-deploy.js",
-    "typecheck": "tsc -p tsconfig.app.json --noEmit",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "storybook": "node scripts/kill-dev-ports.mjs 5200 && storybook dev -p 5200 --exact-port --host 127.0.0.1",
-    "storybook-build": "storybook build",
-    "storybook-deploy": "npm run storybook-build && node ./scripts/storybook-deploy.js",
-    "prepublishOnly": "npm run build",
-    "stage-package-dist": "node ./scripts/stage-package-dist.mjs",
-    "prepare": "husky",
-    "test": "node scripts/kill-dev-ports.mjs 5300 && vitest --ui --watch --config vitest.unit.config.js --api.port 5300 --api.strictPort",
-    "test-once": "vitest run --config vitest.unit.config.js"
-  },
+
   "peerDependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
@@ -102,6 +104,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
     "eslint-plugin-storybook": "^10.6.7",
+    "fflate": "^0.8.3",
     "globals": "^17.14.0",
     "husky": "^9.1.7",
     "jsdom": "^31.0.0",

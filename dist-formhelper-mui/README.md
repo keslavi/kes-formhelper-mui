@@ -54,3 +54,16 @@ export function ExampleForm() {
 ```bash
 npm run build
 ```
+
+To stage the npm package contents—including the library build in `dist/`,
+Storybook build in `storybook-static/`, and a `source.zip` snapshot of the
+project:
+
+```bash
+npm run stage-package-dist
+```
+
+The source archive contains project files under a `source/` directory,
+excluding repository metadata, dependencies, generated build outputs,
+environment files, logs, and other local artifacts. All three are included in
+the npm tarball and staged in `dist-formhelper-mui/`.
