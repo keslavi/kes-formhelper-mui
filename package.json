@@ -15,7 +15,7 @@
     "storybook": "node scripts/kill-dev-ports.mjs 5200 && storybook dev -p 5200 --exact-port --host 127.0.0.1",
     "storybook-build": "storybook build",
     "storybook-deploy": "npm run storybook-build && node ./scripts/storybook-deploy.js",
-    "prepublishOnly": "npm run build",
+    "prepack": "npm run build && node scripts/create-source-archive.mjs",
     "stage-package-dist": "node ./scripts/stage-package-dist.mjs",
     "prepare": "husky",
     "test": "node scripts/kill-dev-ports.mjs 5300 && vitest --ui --watch --config vitest.unit.config.js --api.port 5300 --api.strictPort",

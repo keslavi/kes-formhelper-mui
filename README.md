@@ -55,6 +55,9 @@ export function ExampleForm() {
 npm run build
 ```
 
+`npm pack` and `npm publish` also run the `prepack` lifecycle, which builds the
+library and Storybook and generates `source.zip` before packaging.
+
 To stage the npm package contents—including the library build in `dist/`,
 Storybook build in `storybook-static/`, and a `source.zip` snapshot of the
 project:

@@ -7,12 +7,10 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
-  writeFileSync,
 } from 'fs';
 import { tmpdir } from 'os';
-import { dirname, extname, join, relative, sep } from 'path';
+import { dirname, extname, join } from 'path';
 import { fileURLToPath } from 'url';
-import { zipSync } from 'fflate';
 import { assertNoSensitivePatterns } from './scan-sensitive-patterns.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -20,17 +18,6 @@ const root = join(__dirname, '..');
 const dest = join(root, 'dist-formhelper-mui');
 const SOURCE_ARCHIVE = join(root, 'source.zip');
 const STAGED_SOURCE_ARCHIVE = join(dest, 'source.zip');
-const SOURCE_EXCLUDED_DIRS = new Set([
-  '.git',
-  '.nyc_output',
-  '.vite',
-  '.cache',
-  'coverage',
-  'dist',
-  'dist-formhelper-mui',
-  'node_modules',
-  'storybook-static',
-]);
 const PASSWORD_ASSIGNMENT = /password\s+=/gi;
 const TEXT_EXTENSIONS = new Set([
   '.css',
@@ -123,44 +110,6 @@ function walkFiles(dir, visit) {
   }
 }
 
-function collectSourceFiles(dir, files = []) {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const path = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (!SOURCE_EXCLUDED_DIRS.has(entry.name)) {
-        collectSourceFiles(path, files);
-      }
-      continue;
-    }
-
-    if (
-      entry.isFile()
-      && entry.name !== '.DS_Store'
-      && !entry.name.endsWith('.tsbuildinfo')
-      && !entry.name.endsWith('.log')
-      && !(entry.name.startsWith('.env') && entry.name !== '.env.example')
-    ) {
-      files.push(path);
-    }
-  }
-  return files;
-}
-
-function createSourceArchive() {
-  const sourceFiles = collectSourceFiles(root);
-  // Tests include synthetic SSNs and card numbers as mask fixtures.
-  const nonTestFiles = sourceFiles.filter((path) => !/\.(test|spec)\./i.test(path));
-  assertNoSensitivePatterns(nonTestFiles, root);
-
-  const archiveEntries = Object.fromEntries(
-    sourceFiles.map((path) => [
-      `source/${relative(root, path).split(sep).join('/')}`,
-      readFileSync(path),
-    ]),
-  );
-  writeFileSync(SOURCE_ARCHIVE, zipSync(archiveEntries, { level: 6 }));
-}
-
 function sanitizeStorybookStatic() {
   const storybookDir = join(dest, 'storybook-static');
   if (!existsSync(storybookDir)) {
@@ -194,8 +143,11 @@ function sanitizeStorybookStatic() {
 
 runNpm(['run', 'build'], true);
 requirePublishArtifacts();
-createSourceArchive();
 try {
+  execFileSync(process.execPath, [join(__dirname, 'create-source-archive.mjs')], {
+    cwd: root,
+    stdio: 'inherit',
+  });
   const { packDir, tarball } = packToTemp();
   try {
     extractTarball(tarball);
