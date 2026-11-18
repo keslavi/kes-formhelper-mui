@@ -1,6 +1,6 @@
 {
-  "name": "kes-react-formhelper",
-  "version": "0.1.6",
+  "name": "kes-formhelper-mui",
+  "version": "0.1.7",
   "description": "Form helper components for MUI built on react-hook-form.",
   "scripts": {
     "start": "node ./scripts/start.mjs",

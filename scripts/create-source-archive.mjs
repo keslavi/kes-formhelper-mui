@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 import {
-  readdirSync,
+  existsSync,
   readFileSync,
   writeFileSync,
 } from 'fs';
-import { dirname, join, relative, sep } from 'path';
+import { dirname, join, relative } from 'path';
+import { execFileSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { zipSync } from 'fflate';
 import { assertNoSensitivePatterns } from './scan-sensitive-patterns.mjs';
@@ -24,38 +25,35 @@ const SOURCE_EXCLUDED_DIRS = new Set([
   'storybook-static',
 ]);
 
-function collectSourceFiles(dir, files = []) {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const path = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (!SOURCE_EXCLUDED_DIRS.has(entry.name)) {
-        collectSourceFiles(path, files);
-      }
-      continue;
-    }
+function collectTrackedSourceFiles() {
+  const trackedPaths = execFileSync('git', ['ls-files', '--cached', '-z'], {
+    cwd: root,
+    encoding: 'buffer',
+  }).toString('utf8').split('\0').filter(Boolean);
 
-    if (
-      entry.isFile()
-      && relative(root, path) !== 'source.zip'
-      && entry.name !== '.DS_Store'
-      && !entry.name.endsWith('.tsbuildinfo')
-      && !entry.name.endsWith('.log')
-      && !(entry.name.startsWith('.env') && entry.name !== '.env.example')
-    ) {
-      files.push(path);
-    }
-  }
-  return files;
+  return trackedPaths
+    .filter((path) => {
+      const segments = path.split('/');
+      const filename = segments.at(-1);
+      return existsSync(join(root, path))
+        && !segments.some((segment) => SOURCE_EXCLUDED_DIRS.has(segment))
+        && path !== 'source.zip'
+        && filename !== '.DS_Store'
+        && !filename.endsWith('.tsbuildinfo')
+        && !filename.endsWith('.log')
+        && !(filename.startsWith('.env') && filename !== '.env.example');
+    })
+    .map((path) => join(root, path));
 }
 
-const sourceFiles = collectSourceFiles(root);
+const sourceFiles = collectTrackedSourceFiles();
 // Tests include synthetic SSNs and card numbers as mask fixtures.
 const nonTestFiles = sourceFiles.filter((path) => !/\.(test|spec)\./i.test(path));
 assertNoSensitivePatterns(nonTestFiles, root);
 
 const archiveEntries = Object.fromEntries(
   sourceFiles.map((path) => [
-    `source/${relative(root, path).split(sep).join('/')}`,
+    `source/${relative(root, path).replaceAll('\\', '/')}`,
     readFileSync(path),
   ]),
 );
